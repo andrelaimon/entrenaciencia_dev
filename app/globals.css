@@ -1,26 +1,148 @@
 @import "tailwindcss";
 
+@theme {
+  --color-blue: #59A0CF;
+  --color-navy: #224277;
+  --color-cyan: #23D3FF;
+  --color-gold: #FFC300;
+  --color-green: #7ED957;
+  --color-bg-dark: #0A1628;
+  --color-bg-light: #EDF5FA;
+  --color-text: #1A1A2E;
+  --color-text-muted: #6B7280;
+
+  --font-poppins: 'Poppins', sans-serif;
+
+  --radius-card: 16px;
+  --radius-button: 50px;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --gradient-main: linear-gradient(180deg, #59A0CF 0%, #224277 100%);
+  --gradient-hero: linear-gradient(160deg, #0A1628 0%, #224277 50%, #59A0CF 100%);
+  --gradient-light-blue: linear-gradient(135deg, #88F1FF 0%, #6DBEF2 100%);
+  --gradient-gold: linear-gradient(135deg, #FFC300 0%, #FFDC6B 100%);
+  --gradient-section: linear-gradient(180deg, #224277 0%, #0A1628 100%);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Poppins', sans-serif;
+  background-color: #0A1628;
+  color: #ffffff;
+}
+
+/* Hexagon clip path */
+.hex-clip {
+  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+}
+
+/* Hex pattern background */
+.hex-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='70' viewBox='0 0 60 70'%3E%3Cpolygon points='30,2 56,17 56,53 30,68 4,53 4,17' fill='none' stroke='white' stroke-width='1'/%3E%3C/svg%3E");
+  background-size: 60px 70px;
+}
+
+/* Glassy card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Input dark glassy */
+.input-dark {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  transition: border-color 0.2s;
+}
+.input-dark:focus {
+  outline: none;
+  border-color: #23D3FF;
+}
+.input-dark::placeholder {
+  color: rgba(255,255,255,0.4);
+}
+
+/* Select dark glassy */
+.select-dark {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  transition: border-color 0.2s;
+  appearance: none;
+}
+.select-dark:focus {
+  outline: none;
+  border-color: #23D3FF;
+}
+.select-dark option {
+  background: #224277;
+  color: white;
+}
+
+/* Gold gradient button */
+.btn-gold {
+  background: var(--gradient-gold);
+  color: #1A1A2E;
+  font-weight: 800;
+  border-radius: 50px;
+  transition: opacity 0.2s, transform 0.1s;
+}
+.btn-gold:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Cyan solid button */
+.btn-cyan {
+  background: #23D3FF;
+  color: #0A1628;
+  font-weight: 700;
+  border-radius: 50px;
+  transition: opacity 0.2s, transform 0.1s;
+}
+.btn-cyan:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Outline white button */
+.btn-outline {
+  background: transparent;
+  color: white;
+  font-weight: 700;
+  border-radius: 50px;
+  border: 2px solid white;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-outline:hover {
+  background: white;
+  color: #0A1628;
+}
+
+/* Toggle button group */
+.toggle-btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: 2px solid rgba(255,255,255,0.3);
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.toggle-btn.active {
+  background: #23D3FF;
+  border-color: #23D3FF;
+  color: #0A1628;
+}
+.toggle-btn:hover:not(.active) {
+  border-color: rgba(255,255,255,0.6);
+  color: white;
 }
