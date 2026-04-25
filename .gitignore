@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+Feedback Web.pdf
 
 # debug
 npm-debug.log*
