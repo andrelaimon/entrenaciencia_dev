@@ -1,17 +1,21 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Salad, Leaf, FlaskConical, Dumbbell, ArrowRight } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
+import EmailModal from './EmailModal';
+
+type ResourceKind = 'pdf' | 'internal' | 'soon';
 
 interface Resource {
   icon: LucideIcon;
   title: string;
   description: string;
   accent: string;
-  href: string;
-  internal?: boolean;
+  kind: ResourceKind;
+  href?: string;
   featured?: boolean;
 }
 
@@ -21,34 +25,40 @@ const resources: Resource[] = [
     title: 'Guía para perder peso',
     description: 'Aprende los principios básicos para perder grasa de forma sostenible.',
     accent: '#7ED957',
-    href: '#',
+    kind: 'pdf',
   },
   {
     icon: Leaf,
     title: 'Guía de consumo de proteína',
     description: 'Descubre cuánta proteína necesitas y cómo incluirla en tu día.',
     accent: '#FFC300',
-    href: '#',
+    kind: 'pdf',
   },
   {
     icon: FlaskConical,
     title: 'Calculadora de calorías',
     description: 'Estima tus calorías de mantenimiento y tus objetivos diarios.',
     accent: '#23D3FF',
+    kind: 'internal',
     href: '/calculadora',
-    internal: true,
   },
   {
     icon: Dumbbell,
     title: 'Curso',
     description: 'Un curso práctico para entrenar y comer con ciencia.',
     accent: '#FFC300',
-    href: '#',
+    kind: 'soon',
     featured: true,
   },
 ];
 
-function ResourceCard({ resource, index }: { resource: Resource; index: number }) {
+interface ResourceCardProps {
+  resource: Resource;
+  index: number;
+  onPdfClick: (resource: Resource) => void;
+}
+
+function ResourceCard({ resource, index, onPdfClick }: ResourceCardProps) {
   const Icon = resource.icon;
   const featured = resource.featured === true;
 
@@ -97,12 +107,15 @@ function ResourceCard({ resource, index }: { resource: Resource; index: number }
         >
           {resource.description}
         </p>
-        <span
-          className="inline-flex items-center gap-1 text-xs font-bold mt-1"
-          style={{ color: featured ? '#FFC300' : resource.accent }}
-        >
-          {featured ? 'Unirme al curso' : 'Ver más'} <ArrowRight size={12} />
-        </span>
+        {resource.kind !== 'soon' && (
+          <span
+            className="inline-flex items-center gap-1 text-xs font-bold mt-1"
+            style={{ color: resource.accent }}
+          >
+            {resource.kind === 'pdf' ? 'Solicitar PDF' : 'Ver más'}{' '}
+            <ArrowRight size={12} />
+          </span>
+        )}
       </div>
     </>
   );
@@ -121,6 +134,32 @@ function ResourceCard({ resource, index }: { resource: Resource; index: number }
       }
     : undefined;
 
+  let inner: React.ReactNode;
+  if (resource.kind === 'internal' && resource.href) {
+    inner = (
+      <Link href={resource.href} className={sharedClass} style={featuredStyle}>
+        {cardBody}
+      </Link>
+    );
+  } else if (resource.kind === 'pdf') {
+    inner = (
+      <button
+        type="button"
+        onClick={() => onPdfClick(resource)}
+        className={`${sharedClass} text-left w-full cursor-pointer`}
+        style={featuredStyle}
+      >
+        {cardBody}
+      </button>
+    );
+  } else {
+    inner = (
+      <div className={`${sharedClass} cursor-default`} style={featuredStyle}>
+        {cardBody}
+      </div>
+    );
+  }
+
   return (
     <motion.div
       className="h-full"
@@ -129,20 +168,20 @@ function ResourceCard({ resource, index }: { resource: Resource; index: number }
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
     >
-      {resource.internal ? (
-        <Link href={resource.href} className={sharedClass} style={featuredStyle}>
-          {cardBody}
-        </Link>
-      ) : (
-        <a href={resource.href} className={sharedClass} style={featuredStyle}>
-          {cardBody}
-        </a>
-      )}
+      {inner}
     </motion.div>
   );
 }
 
 export default function ResourcesSection() {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedTitle, setSelectedTitle] = useState<string | undefined>(undefined);
+
+  function handlePdfClick(resource: Resource) {
+    setSelectedTitle(resource.title);
+    setModalOpen(true);
+  }
+
   return (
     <section
       id="recursos"
@@ -176,10 +215,21 @@ export default function ResourcesSection() {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {resources.map((resource, i) => (
-            <ResourceCard key={resource.title} resource={resource} index={i} />
+            <ResourceCard
+              key={resource.title}
+              resource={resource}
+              index={i}
+              onPdfClick={handlePdfClick}
+            />
           ))}
         </div>
       </div>
+
+      <EmailModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        pdfTitle={selectedTitle}
+      />
     </section>
   );
 }
