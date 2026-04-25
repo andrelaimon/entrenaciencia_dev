@@ -7,7 +7,7 @@ import { Salad, Leaf, FlaskConical, Dumbbell, ArrowRight } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 import EmailModal from './EmailModal';
 
-type ResourceKind = 'pdf' | 'internal' | 'soon';
+type ResourceKind = 'pdf' | 'internal' | 'course';
 
 interface Resource {
   icon: LucideIcon;
@@ -47,7 +47,7 @@ const resources: Resource[] = [
     title: 'Curso',
     description: 'Un curso práctico para entrenar y comer con ciencia.',
     accent: '#FFC300',
-    kind: 'soon',
+    kind: 'course',
     featured: true,
   },
 ];
@@ -55,10 +55,10 @@ const resources: Resource[] = [
 interface ResourceCardProps {
   resource: Resource;
   index: number;
-  onPdfClick: (resource: Resource) => void;
+  onLeadClick: (resource: Resource) => void;
 }
 
-function ResourceCard({ resource, index, onPdfClick }: ResourceCardProps) {
+function ResourceCard({ resource, index, onLeadClick }: ResourceCardProps) {
   const Icon = resource.icon;
   const featured = resource.featured === true;
 
@@ -107,15 +107,15 @@ function ResourceCard({ resource, index, onPdfClick }: ResourceCardProps) {
         >
           {resource.description}
         </p>
-        {resource.kind !== 'soon' && (
-          <span
-            className="inline-flex items-center gap-1 text-xs font-bold mt-1"
-            style={{ color: resource.accent }}
-          >
-            {resource.kind === 'pdf' ? 'Solicitar PDF' : 'Ver más'}{' '}
-            <ArrowRight size={12} />
-          </span>
-        )}
+        <span
+          className="inline-flex items-center gap-1 text-xs font-bold mt-1"
+          style={{ color: featured ? '#FFC300' : resource.accent }}
+        >
+          {resource.kind === 'pdf' && 'Solicitar PDF'}
+          {resource.kind === 'internal' && 'Ver más'}
+          {resource.kind === 'course' && 'Notificarme'}{' '}
+          <ArrowRight size={12} />
+        </span>
       </div>
     </>
   );
@@ -141,22 +141,16 @@ function ResourceCard({ resource, index, onPdfClick }: ResourceCardProps) {
         {cardBody}
       </Link>
     );
-  } else if (resource.kind === 'pdf') {
+  } else {
     inner = (
       <button
         type="button"
-        onClick={() => onPdfClick(resource)}
+        onClick={() => onLeadClick(resource)}
         className={`${sharedClass} text-left w-full cursor-pointer`}
         style={featuredStyle}
       >
         {cardBody}
       </button>
-    );
-  } else {
-    inner = (
-      <div className={`${sharedClass} cursor-default`} style={featuredStyle}>
-        {cardBody}
-      </div>
     );
   }
 
@@ -176,9 +170,12 @@ function ResourceCard({ resource, index, onPdfClick }: ResourceCardProps) {
 export default function ResourcesSection() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTitle, setSelectedTitle] = useState<string | undefined>(undefined);
+  const [selectedKind, setSelectedKind] = useState<'pdf' | 'course'>('pdf');
 
-  function handlePdfClick(resource: Resource) {
+  function handleLeadClick(resource: Resource) {
+    if (resource.kind !== 'pdf' && resource.kind !== 'course') return;
     setSelectedTitle(resource.title);
+    setSelectedKind(resource.kind);
     setModalOpen(true);
   }
 
@@ -219,7 +216,7 @@ export default function ResourcesSection() {
               key={resource.title}
               resource={resource}
               index={i}
-              onPdfClick={handlePdfClick}
+              onLeadClick={handleLeadClick}
             />
           ))}
         </div>
@@ -228,7 +225,8 @@ export default function ResourcesSection() {
       <EmailModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        pdfTitle={selectedTitle}
+        title={selectedTitle}
+        kind={selectedKind}
       />
     </section>
   );

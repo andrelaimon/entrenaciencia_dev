@@ -3,13 +3,46 @@
 import { useState, useEffect } from 'react';
 import { X, Mail, CheckCircle } from 'lucide-react';
 
+type ModalKind = 'pdf' | 'course';
+
 interface EmailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  pdfTitle?: string;
+  title?: string;
+  kind?: ModalKind;
 }
 
-export default function EmailModal({ isOpen, onClose, pdfTitle }: EmailModalProps) {
+const COPY: Record<ModalKind, {
+  heading: React.ReactNode;
+  ctaLabel: string;
+  successHeading: string;
+  successBody: string;
+}> = {
+  pdf: {
+    heading: (
+      <>
+        Te enviaremos el PDF a tu{' '}
+        <span style={{ color: '#224277' }}>email</span>
+      </>
+    ),
+    ctaLabel: 'Solicitar PDF',
+    successHeading: '¡Solicitud recibida!',
+    successBody: 'Te enviaremos el PDF a tu email muy pronto. ¡Gracias por unirte a la comunidad!',
+  },
+  course: {
+    heading: (
+      <>
+        Te avisaremos cuando el{' '}
+        <span style={{ color: '#224277' }}>curso</span> esté listo
+      </>
+    ),
+    ctaLabel: 'Notificarme',
+    successHeading: '¡Estás en la lista!',
+    successBody: 'Te avisaremos en cuanto el curso esté disponible. ¡Gracias por tu interés!',
+  },
+};
+
+export default function EmailModal({ isOpen, onClose, title, kind = 'pdf' }: EmailModalProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
@@ -27,6 +60,8 @@ export default function EmailModal({ isOpen, onClose, pdfTitle }: EmailModalProp
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const copy = COPY[kind];
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -51,7 +86,7 @@ export default function EmailModal({ isOpen, onClose, pdfTitle }: EmailModalProp
     fetch('/api/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, whatsapp, source: pdfTitle ?? null }),
+      body: JSON.stringify({ name, email, whatsapp, source: title ?? null }),
     }).catch(() => {});
 
     setSubmitted(true);
@@ -94,10 +129,10 @@ export default function EmailModal({ isOpen, onClose, pdfTitle }: EmailModalProp
           <div className="text-center py-6 flex flex-col items-center gap-4">
             <CheckCircle size={56} color="#7ED957" strokeWidth={1.5} />
             <h3 className="text-2xl font-extrabold" style={{ color: '#1A1A2E', fontWeight: 800 }}>
-              ¡Solicitud recibida!
+              {copy.successHeading}
             </h3>
             <p className="text-gray-500 text-sm">
-              Te enviaremos el PDF a tu email muy pronto. ¡Gracias por unirte a la comunidad!
+              {copy.successBody}
             </p>
           </div>
         ) : (
@@ -118,12 +153,11 @@ export default function EmailModal({ isOpen, onClose, pdfTitle }: EmailModalProp
               className="text-2xl font-extrabold text-center mb-2"
               style={{ color: '#1A1A2E', fontWeight: 800 }}
             >
-              Te enviaremos el PDF a tu{' '}
-              <span style={{ color: '#224277' }}>email</span>
+              {copy.heading}
             </h3>
-            {pdfTitle && (
+            {title && (
               <p className="text-center text-sm text-gray-500 mb-6">
-                {pdfTitle}
+                {title}
               </p>
             )}
 
@@ -188,7 +222,7 @@ export default function EmailModal({ isOpen, onClose, pdfTitle }: EmailModalProp
                 }}
               >
                 <Mail size={16} />
-                Solicitar PDF
+                {copy.ctaLabel}
               </button>
             </form>
           </>
