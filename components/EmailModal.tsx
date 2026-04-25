@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Download, CheckCircle } from 'lucide-react';
-import { saveEmail, getSavedEmail } from '@/lib/emailStore';
+import { saveEmail } from '@/lib/emailStore';
 
 interface EmailModalProps {
   isOpen: boolean;
@@ -12,7 +12,9 @@ interface EmailModalProps {
 }
 
 export default function EmailModal({ isOpen, onClose, pdfTitle, pdfFile }: EmailModalProps) {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
   const [accepted, setAccepted] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -28,10 +30,18 @@ export default function EmailModal({ isOpen, onClose, pdfTitle, pdfFile }: Email
 
   if (!isOpen) return null;
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!name.trim()) {
+      setError('Por favor ingresa tu nombre.');
+      return;
+    }
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError('Por favor ingresa un email válido.');
+      return;
+    }
+    if (!whatsapp.trim()) {
+      setError('Por favor ingresa tu número de WhatsApp.');
       return;
     }
     if (!accepted) {
@@ -40,9 +50,15 @@ export default function EmailModal({ isOpen, onClose, pdfTitle, pdfFile }: Email
     }
     setError('');
     saveEmail(email);
+
+    fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, whatsapp, source: pdfTitle ?? null }),
+    }).catch(() => {});
+
     setSubmitted(true);
 
-    // Trigger download after a short delay
     setTimeout(() => {
       if (pdfFile) {
         const link = document.createElement('a');
@@ -55,10 +71,18 @@ export default function EmailModal({ isOpen, onClose, pdfTitle, pdfFile }: Email
     setTimeout(() => {
       onClose();
       setSubmitted(false);
+      setName('');
       setEmail('');
+      setWhatsapp('');
       setAccepted(false);
     }, 2500);
   }
+
+  const inputStyle = {
+    border: '2px solid #e5e7eb',
+    color: '#1A1A2E',
+    outline: 'none',
+  };
 
   return (
     <div
@@ -70,7 +94,6 @@ export default function EmailModal({ isOpen, onClose, pdfTitle, pdfFile }: Email
         className="relative w-full max-w-md rounded-2xl p-8 shadow-2xl"
         style={{ background: 'white' }}
       >
-        {/* Close button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
@@ -91,7 +114,6 @@ export default function EmailModal({ isOpen, onClose, pdfTitle, pdfFile }: Email
           </div>
         ) : (
           <>
-            {/* Icon */}
             <div className="flex justify-center mb-6">
               <div
                 className="w-16 h-16 flex items-center justify-center"
@@ -108,7 +130,7 @@ export default function EmailModal({ isOpen, onClose, pdfTitle, pdfFile }: Email
               className="text-2xl font-extrabold text-center mb-2"
               style={{ color: '#1A1A2E', fontWeight: 800 }}
             >
-              Ingresa tu email para{' '}
+              Ingresa tus datos para{' '}
               <span style={{ color: '#224277' }}>descargar</span>
             </h3>
             {pdfTitle && (
@@ -119,16 +141,34 @@ export default function EmailModal({ isOpen, onClose, pdfTitle, pdfFile }: Email
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-4">
               <input
+                type="text"
+                placeholder="Tu nombre"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl text-sm border transition-colors"
+                style={inputStyle}
+                onFocus={(e) => (e.target.style.borderColor = '#23D3FF')}
+                onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+              />
+
+              <input
                 type="email"
                 placeholder="tu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl text-sm border transition-colors"
-                style={{
-                  border: '2px solid #e5e7eb',
-                  color: '#1A1A2E',
-                  outline: 'none',
-                }}
+                style={inputStyle}
+                onFocus={(e) => (e.target.style.borderColor = '#23D3FF')}
+                onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+              />
+
+              <input
+                type="tel"
+                placeholder="WhatsApp (ej. +1 555 123 4567)"
+                value={whatsapp}
+                onChange={(e) => setWhatsapp(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl text-sm border transition-colors"
+                style={inputStyle}
                 onFocus={(e) => (e.target.style.borderColor = '#23D3FF')}
                 onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
               />
