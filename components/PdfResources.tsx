@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Download, Salad, Dumbbell, FlaskConical, Leaf, ChevronDown } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 import EmailModal from './EmailModal';
-import { hasEmail } from '@/lib/emailStore';
 
 interface PdfCard {
   icon: LucideIcon;
@@ -62,12 +61,8 @@ export default function PdfResources() {
   const [openCard, setOpenCard] = useState<number | null>(null);
 
   function handleDownload(pdf: PdfCard) {
-    if (hasEmail()) {
-      alert(`Descargando: ${pdf.title}\n(Agrega el archivo PDF real en /public${pdf.file})`);
-    } else {
-      setSelectedPdf(pdf);
-      setModalOpen(true);
-    }
+    setSelectedPdf(pdf);
+    setModalOpen(true);
   }
 
   function toggleCard(index: number) {
@@ -207,7 +202,6 @@ export default function PdfResources() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         pdfTitle={selectedPdf?.title}
-        pdfFile={selectedPdf?.file}
       />
     </section>
   );

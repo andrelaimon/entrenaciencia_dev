@@ -1,17 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Download, CheckCircle } from 'lucide-react';
-import { saveEmail } from '@/lib/emailStore';
+import { X, Mail, CheckCircle } from 'lucide-react';
 
 interface EmailModalProps {
   isOpen: boolean;
   onClose: () => void;
   pdfTitle?: string;
-  pdfFile?: string;
 }
 
-export default function EmailModal({ isOpen, onClose, pdfTitle, pdfFile }: EmailModalProps) {
+export default function EmailModal({ isOpen, onClose, pdfTitle }: EmailModalProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
@@ -49,7 +47,6 @@ export default function EmailModal({ isOpen, onClose, pdfTitle, pdfFile }: Email
       return;
     }
     setError('');
-    saveEmail(email);
 
     fetch('/api/subscribe', {
       method: 'POST',
@@ -60,22 +57,13 @@ export default function EmailModal({ isOpen, onClose, pdfTitle, pdfFile }: Email
     setSubmitted(true);
 
     setTimeout(() => {
-      if (pdfFile) {
-        const link = document.createElement('a');
-        link.href = pdfFile;
-        link.download = pdfTitle || 'recurso.pdf';
-        link.click();
-      }
-    }, 800);
-
-    setTimeout(() => {
       onClose();
       setSubmitted(false);
       setName('');
       setEmail('');
       setWhatsapp('');
       setAccepted(false);
-    }, 2500);
+    }, 3000);
   }
 
   const inputStyle = {
@@ -106,10 +94,10 @@ export default function EmailModal({ isOpen, onClose, pdfTitle, pdfFile }: Email
           <div className="text-center py-6 flex flex-col items-center gap-4">
             <CheckCircle size={56} color="#7ED957" strokeWidth={1.5} />
             <h3 className="text-2xl font-extrabold" style={{ color: '#1A1A2E', fontWeight: 800 }}>
-              ¡Listo!
+              ¡Solicitud recibida!
             </h3>
             <p className="text-gray-500 text-sm">
-              Tu descarga comenzará en breve. ¡Gracias por unirte a la comunidad!
+              Te enviaremos el PDF a tu email muy pronto. ¡Gracias por unirte a la comunidad!
             </p>
           </div>
         ) : (
@@ -122,7 +110,7 @@ export default function EmailModal({ isOpen, onClose, pdfTitle, pdfFile }: Email
                   background: 'linear-gradient(135deg, #FFC300 0%, #FFDC6B 100%)',
                 }}
               >
-                <Download size={26} color="#1A1A2E" />
+                <Mail size={26} color="#1A1A2E" />
               </div>
             </div>
 
@@ -130,8 +118,8 @@ export default function EmailModal({ isOpen, onClose, pdfTitle, pdfFile }: Email
               className="text-2xl font-extrabold text-center mb-2"
               style={{ color: '#1A1A2E', fontWeight: 800 }}
             >
-              Ingresa tus datos para{' '}
-              <span style={{ color: '#224277' }}>descargar</span>
+              Te enviaremos el PDF a tu{' '}
+              <span style={{ color: '#224277' }}>email</span>
             </h3>
             {pdfTitle && (
               <p className="text-center text-sm text-gray-500 mb-6">
@@ -199,8 +187,8 @@ export default function EmailModal({ isOpen, onClose, pdfTitle, pdfFile }: Email
                   fontWeight: 800,
                 }}
               >
-                <Download size={16} />
-                Descargar Ahora
+                <Mail size={16} />
+                Solicitar PDF
               </button>
             </form>
           </>
