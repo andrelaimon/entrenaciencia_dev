@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Mail, CheckCircle } from 'lucide-react';
 
 type ModalKind = 'pdf' | 'course';
@@ -107,15 +108,15 @@ export default function EmailModal({ isOpen, onClose, title, kind = 'pdf' }: Ema
     outline: 'none',
   };
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4"
       style={{ background: 'rgba(10, 22, 40, 0.85)', backdropFilter: 'blur(6px)' }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="relative w-full max-w-md rounded-2xl p-8 shadow-2xl"
-        style={{ background: 'white' }}
+        className="relative w-full max-w-md rounded-2xl p-8 shadow-2xl overflow-y-auto"
+        style={{ background: 'white', maxHeight: '90vh' }}
       >
         <button
           onClick={onClose}
@@ -228,6 +229,7 @@ export default function EmailModal({ isOpen, onClose, title, kind = 'pdf' }: Ema
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

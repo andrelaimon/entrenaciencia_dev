@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
+import CourseModal from './CourseModal';
 
 function LogoWithFallback() {
   const [imgFailed, setImgFailed] = useState(false);
@@ -43,6 +44,7 @@ const navLinks = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [courseModalOpen, setCourseModalOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -79,8 +81,9 @@ export default function Navbar() {
               {link.label}
             </a>
           ))}
-          <a
-            href="#"
+          <button
+            type="button"
+            onClick={() => setCourseModalOpen(true)}
             className="btn-gold px-5 py-2 text-sm font-bold"
             style={{
               background: 'linear-gradient(135deg, #FFC300 0%, #FFDC6B 100%)',
@@ -90,7 +93,7 @@ export default function Navbar() {
             }}
           >
             Unirme al curso
-          </a>
+          </button>
         </div>
 
         {/* Mobile hamburger */}
@@ -119,9 +122,9 @@ export default function Navbar() {
               {link.label}
             </a>
           ))}
-          <a
-            href="#"
-            onClick={() => setMenuOpen(false)}
+          <button
+            type="button"
+            onClick={() => { setMenuOpen(false); setCourseModalOpen(true); }}
             className="mt-2 text-center px-5 py-3 text-sm font-bold rounded-full"
             style={{
               background: 'linear-gradient(135deg, #FFC300 0%, #FFDC6B 100%)',
@@ -129,9 +132,11 @@ export default function Navbar() {
             }}
           >
             Unirme al curso
-          </a>
+          </button>
         </div>
       )}
+
+      <CourseModal isOpen={courseModalOpen} onClose={() => setCourseModalOpen(false)} />
     </nav>
   );
 }
