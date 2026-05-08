@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react';
 import { getTrackingContext } from '@/lib/tracking';
-import { firePixelEvent } from '@/lib/pixel';
+import { fireConversionEvent } from '@/lib/pixel';
 import {
   activityLabels,
   goalLabels,
@@ -251,7 +251,7 @@ export default function CalculatorWizard() {
 
                 if (!res.ok) throw new Error('submit_failed');
                 submittedRef.current = true;
-                firePixelEvent('CompleteRegistration', {
+                fireConversionEvent('CompleteRegistration', 'CompleteRegistration', {
                   content_name: 'Calculadora',
                   goal: form.goal,
                   calories: result.calories,

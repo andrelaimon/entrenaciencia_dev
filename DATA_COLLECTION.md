@@ -64,16 +64,18 @@ Tells you what step they reached, how long they spent, what flags/goals they had
 
 ---
 
-## Meta Pixel events
+## Ad pixel events
 
-Once `NEXT_PUBLIC_META_PIXEL_ID` is set:
+Both Meta Pixel and TikTok Pixel fire the same conceptual events using each platform's standard event names. Each pixel activates independently when its env var is set; either can run alone.
 
-| Event | Trigger | Purpose |
+| Trigger | Meta event | TikTok event |
 |---|---|---|
-| `PageView` | Every page load (automatic) | Baseline audience |
-| `Lead` | EmailModal submit (PDF or course) | Retargeting audience of interested users |
-| `Lead` | CourseModal submit | Same |
-| `CompleteRegistration` | Calculator fully submitted | High-intent audience |
+| Every page load | `PageView` (automatic) | `page` (automatic) |
+| EmailModal submit (PDF or course card) | `Lead` | `Subscribe` |
+| CourseModal submit (navbar) | `Lead` | `Subscribe` |
+| Calculator fully submitted | `CompleteRegistration` | `CompleteRegistration` |
+
+These power retargeting and lookalike audiences in Meta Ads Manager and TikTok Ads Manager respectively.
 
 ---
 
@@ -102,6 +104,7 @@ Once `NEXT_PUBLIC_GA_ID` is set, GA4 tracks page views, sessions, and traffic so
 | `SUPABASE_URL`, `SUPABASE_ANON_KEY` | Database (write-only via RLS) |
 | `NEXT_PUBLIC_GA_ID` | Google Analytics 4 (blank = disabled) |
 | `NEXT_PUBLIC_META_PIXEL_ID` | Meta Pixel (blank = disabled) |
+| `NEXT_PUBLIC_TIKTOK_PIXEL_ID` | TikTok Pixel (blank = disabled) |
 
 ---
 
