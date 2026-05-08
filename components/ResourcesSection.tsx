@@ -2,169 +2,83 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Salad, Leaf, FlaskConical, Dumbbell, ArrowRight } from 'lucide-react';
-import { LucideIcon } from 'lucide-react';
 import EmailModal from './EmailModal';
 
 type ResourceKind = 'pdf' | 'internal' | 'course';
 
 interface Resource {
-  icon: LucideIcon;
+  tag: string;
   title: string;
   description: string;
-  accent: string;
+  actionLabel: string;
   kind: ResourceKind;
   href?: string;
-  featured?: boolean;
+  coming?: boolean;
 }
 
 const resources: Resource[] = [
   {
-    icon: Salad,
-    title: 'Guía para perder peso',
-    description: 'Aprende los principios básicos para perder grasa de forma sostenible.',
-    accent: '#7ED957',
+    tag: 'Nutrición',
+    title: 'Pierde Grasa con Ciencia',
+    description: 'Qué es el déficit calórico, cómo funciona, los mitos que te están frenando, y cómo aplicar lo que la evidencia dice para perder grasa de manera sostenible.',
+    actionLabel: 'Descargar',
     kind: 'pdf',
   },
   {
-    icon: Leaf,
-    title: 'Guía de consumo de proteína',
-    description: 'Descubre cuánta proteína necesitas y cómo incluirla en tu día.',
-    accent: '#FFC300',
+    tag: 'Nutrición',
+    title: 'Proteína con Ciencia',
+    description: 'Qué es la proteína, para qué sirve, los mitos que la rodean, y cómo aplicar lo que la evidencia dice según tu objetivo y peso corporal.',
+    actionLabel: 'Descargar',
     kind: 'pdf',
   },
   {
-    icon: FlaskConical,
-    title: 'Calculadora de calorías',
-    description: 'Estima tus calorías de mantenimiento y tus objetivos diarios.',
-    accent: '#23D3FF',
+    tag: 'Herramienta',
+    title: 'Calculadora de Macros',
+    description: 'Calcula tu déficit calórico exacto y los macros que necesitas para perder peso de forma controlada.',
+    actionLabel: 'Calcular',
     kind: 'internal',
     href: '/calculadora',
   },
   {
-    icon: Dumbbell,
-    title: 'Curso',
-    description: 'Un curso práctico para entrenar y comer con ciencia.',
-    accent: '#FFC300',
+    tag: 'Próximamente',
+    title: 'Curso de Fundamentos',
+    description: 'El sistema completo para transformar tu físico con base en evidencia. Sé el primero en enterarte cuando lance — y accede a precio fundador.',
+    actionLabel: 'Inscribirme',
     kind: 'course',
-    featured: true,
+    coming: true,
   },
 ];
 
-interface ResourceCardProps {
-  resource: Resource;
-  index: number;
-  onLeadClick: (resource: Resource) => void;
-}
+const DownloadIcon = () => (
+  <svg viewBox="0 0 24 24">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
+  </svg>
+);
 
-function ResourceCard({ resource, index, onLeadClick }: ResourceCardProps) {
-  const Icon = resource.icon;
-  const featured = resource.featured === true;
+const CalcIcon = () => (
+  <svg viewBox="0 0 24 24">
+    <rect x="4" y="3" width="16" height="18" rx="2" />
+    <line x1="8" y1="7" x2="16" y2="7" />
+    <line x1="8" y1="11" x2="10" y2="11" />
+    <line x1="13" y1="11" x2="16" y2="11" />
+    <line x1="8" y1="15" x2="10" y2="15" />
+    <line x1="13" y1="15" x2="16" y2="15" />
+  </svg>
+);
 
-  const cardBody = (
-    <>
-      <div
-        className="h-28 flex items-center justify-center relative"
-        style={{
-          background: featured
-            ? 'linear-gradient(135deg, rgba(255,195,0,0.18) 0%, rgba(255,195,0,0.05) 100%)'
-            : `${resource.accent}18`,
-        }}
-      >
-        <div
-          className="w-16 h-16 flex items-center justify-center"
-          style={{
-            clipPath: 'polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)',
-            background: featured ? '#FFC300' : `${resource.accent}33`,
-          }}
-        >
-          <Icon
-            size={30}
-            color={featured ? '#1A1A2E' : resource.accent}
-            strokeWidth={1.6}
-          />
-        </div>
-        {featured && (
-          <span
-            className="absolute top-3 right-3 text-[10px] font-bold px-2 py-1 rounded-full tracking-wider uppercase"
-            style={{ background: '#FFC300', color: '#1A1A2E' }}
-          >
-            Próximamente
-          </span>
-        )}
-      </div>
-      <div className="p-5 flex flex-col flex-1 gap-3">
-        <h3
-          className="font-extrabold text-base leading-snug"
-          style={{ color: featured ? '#FFFFFF' : '#1A1A2E', fontWeight: 800 }}
-        >
-          {resource.title}
-        </h3>
-        <p
-          className="text-xs leading-relaxed flex-1"
-          style={{ color: featured ? 'rgba(255,255,255,0.75)' : '#6B7280' }}
-        >
-          {resource.description}
-        </p>
-        <span
-          className="inline-flex items-center gap-1 text-xs font-bold mt-1"
-          style={{ color: featured ? '#FFC300' : resource.accent }}
-        >
-          {resource.kind === 'pdf' && 'Solicitar PDF'}
-          {resource.kind === 'internal' && 'Ver más'}
-          {resource.kind === 'course' && 'Notificarme'}{' '}
-          <ArrowRight size={12} />
-        </span>
-      </div>
-    </>
-  );
+const EnrollIcon = () => (
+  <svg viewBox="0 0 24 24">
+    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+    <polyline points="22,6 12,13 2,6" />
+  </svg>
+);
 
-  const baseClass =
-    'block h-full rounded-2xl overflow-hidden flex flex-col transition duration-200 hover:-translate-y-1 hover:shadow-2xl';
-  const sharedClass = featured
-    ? `${baseClass} shadow-xl`
-    : `${baseClass} bg-white shadow-md`;
-
-  const featuredStyle = featured
-    ? {
-        background:
-          'linear-gradient(160deg, #0A1628 0%, #224277 55%, #59A0CF 100%)',
-        border: '1px solid rgba(255,195,0,0.35)',
-      }
-    : undefined;
-
-  let inner: React.ReactNode;
-  if (resource.kind === 'internal' && resource.href) {
-    inner = (
-      <Link href={resource.href} className={sharedClass} style={featuredStyle}>
-        {cardBody}
-      </Link>
-    );
-  } else {
-    inner = (
-      <button
-        type="button"
-        onClick={() => onLeadClick(resource)}
-        className={`${sharedClass} text-left w-full cursor-pointer`}
-        style={featuredStyle}
-      >
-        {cardBody}
-      </button>
-    );
-  }
-
-  return (
-    <motion.div
-      className="h-full"
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-    >
-      {inner}
-    </motion.div>
-  );
+function ResourceIcon({ kind }: { kind: ResourceKind }) {
+  if (kind === 'internal') return <CalcIcon />;
+  if (kind === 'course') return <EnrollIcon />;
+  return <DownloadIcon />;
 }
 
 export default function ResourcesSection() {
@@ -180,45 +94,47 @@ export default function ResourcesSection() {
   }
 
   return (
-    <section
-      id="recursos"
-      className="py-24 px-6"
-      style={{ background: '#EDF5FA' }}
-    >
-      <div className="max-w-6xl mx-auto">
-        <motion.div
-          className="text-center mb-14"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <p
-            className="text-sm font-medium tracking-widest uppercase mb-3"
-            style={{ color: '#59A0CF' }}
-          >
-            Recursos
-          </p>
-          <h2
-            className="text-4xl md:text-5xl font-extrabold"
-            style={{ color: '#1A1A2E', fontWeight: 800 }}
-          >
-            Recursos
-          </h2>
-          <p className="text-gray-500 mt-4 max-w-xl mx-auto">
-            Herramientas y guías para empezar hoy.
-          </p>
-        </motion.div>
+    <section className="resources" id="recursos">
+      <div className="section-inner">
+        <span className="eyebrow">Recursos</span>
+        <h2>Empieza <span className="accent">aquí</span></h2>
+        <p className="lead">Guías prácticas, basadas en evidencia, listas para descargar.</p>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {resources.map((resource, i) => (
-            <ResourceCard
-              key={resource.title}
-              resource={resource}
-              index={i}
-              onLeadClick={handleLeadClick}
-            />
-          ))}
+        <div className="resources-grid">
+          {resources.map((resource) => {
+            const cardClass = `resource-card${resource.coming ? ' resource-card-coming' : ''}`;
+            const tagClass = `resource-tag${resource.coming ? ' resource-tag-coming' : ''}`;
+            const actionClass = `resource-action${resource.coming ? ' resource-action-waitlist' : ''}`;
+
+            const actionContent = (
+              <>
+                {resource.actionLabel}
+                <ResourceIcon kind={resource.kind} />
+              </>
+            );
+
+            return (
+              <div key={resource.title} className={cardClass}>
+                <span className={tagClass}>{resource.tag}</span>
+                <h3>{resource.title}</h3>
+                <p>{resource.description}</p>
+
+                {resource.kind === 'internal' && resource.href ? (
+                  <Link href={resource.href} className={actionClass}>
+                    {actionContent}
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    className={actionClass}
+                    onClick={() => handleLeadClick(resource)}
+                  >
+                    {actionContent}
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

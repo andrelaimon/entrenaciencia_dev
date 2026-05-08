@@ -69,3 +69,14 @@ We use the anon (publishable) key, not the service role key. The new `sb_publish
 Hosted on Vercel. Pushing to `main` on GitHub triggers an auto-deploy.
 
 Required Vercel env vars: `SUPABASE_URL` and `SUPABASE_ANON_KEY` (apply to all environments).
+
+## Analytics
+
+Scripts are loaded in `app/layout.tsx` via `next/script` with `strategy="afterInteractive"`. They only activate when the env var is non-empty — leaving it blank disables the script entirely, so local dev is unaffected.
+
+| Service | Env var | Where to get it |
+|---|---|---|
+| Google Analytics 4 | `NEXT_PUBLIC_GA_ID` | GA4 → Admin → Data Streams → Measurement ID (starts with `G-`) |
+| Meta Pixel | `NEXT_PUBLIC_META_PIXEL_ID` | Meta Events Manager → Pixel → Pixel ID (numeric) |
+
+Add to `.env.local` for local testing and to Vercel project settings for production.
