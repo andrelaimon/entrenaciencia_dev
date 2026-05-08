@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import Script from "next/script";
+import Analytics from "@/components/Analytics";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -25,6 +26,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${poppins.variable} h-full`}>
       <body className="min-h-full flex flex-col font-[family-name:var(--font-poppins)]">
+        <Analytics />
         {children}
 
         {/* Google Analytics — add NEXT_PUBLIC_GA_ID to env to activate */}

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CheckCircle, ChevronRight } from 'lucide-react';
+import { getTrackingContext } from '@/lib/tracking';
+import { firePixelEvent } from '@/lib/pixel';
 
 interface CourseModalProps {
   isOpen: boolean;
@@ -129,11 +131,13 @@ export default function CourseModal({ isOpen, onClose }: CourseModalProps) {
     setError('');
     setSubmitting(true);
 
+    const tracking = getTrackingContext();
     fetch('/api/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, whatsapp, source: 'Curso', survey }),
+      body: JSON.stringify({ name, email, whatsapp, source: 'Curso', survey, ...tracking }),
     }).catch(() => {});
+    firePixelEvent('Lead', { content_name: 'Curso', content_category: 'course' });
 
     setSubmitting(false);
     setStep('success');

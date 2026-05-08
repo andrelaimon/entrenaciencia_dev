@@ -13,7 +13,7 @@ export default function CalculadoraPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-20 min-h-screen" style={{ background: '#EDF5FA' }}>
+      <main className="pt-20 min-h-screen" style={{ background: 'linear-gradient(180deg, #023a55 0%, #011a2a 40%, #010d15 100%)' }}>
         <CalculatorWizard />
       </main>
       <Footer />

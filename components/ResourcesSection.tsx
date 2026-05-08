@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import EmailModal from './EmailModal';
+import { getTrackingContext } from '@/lib/tracking';
 
 type ResourceKind = 'pdf' | 'internal' | 'course';
 
@@ -91,6 +92,11 @@ export default function ResourcesSection() {
     setSelectedTitle(resource.title);
     setSelectedKind(resource.kind);
     setModalOpen(true);
+    fetch('/api/resource-events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event_type: 'modal_open', resource_title: resource.title, resource_kind: resource.kind, ...getTrackingContext() }),
+    }).catch(() => {});
   }
 
   return (

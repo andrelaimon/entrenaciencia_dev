@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Mail, CheckCircle } from 'lucide-react';
+import { getTrackingContext } from '@/lib/tracking';
+import { firePixelEvent } from '@/lib/pixel';
 
 type ModalKind = 'pdf' | 'course';
 
@@ -84,11 +86,21 @@ export default function EmailModal({ isOpen, onClose, title, kind = 'pdf' }: Ema
     }
     setError('');
 
+    const tracking = getTrackingContext();
+
     fetch('/api/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, whatsapp, source: title ?? null }),
+      body: JSON.stringify({ name, email, whatsapp, source: title ?? null, ...tracking }),
     }).catch(() => {});
+
+    fetch('/api/resource-events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event_type: 'form_submit', resource_title: title ?? null, resource_kind: kind, name, email, ...tracking }),
+    }).catch(() => {});
+
+    firePixelEvent('Lead', { content_name: title ?? kind, content_category: kind });
 
     setSubmitted(true);
 

@@ -20,7 +20,9 @@
   --glow-soft:   0 0 18px rgba(35, 211, 255, 0.25);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+@layer base {
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+}
 
 html { scroll-behavior: smooth; }
 
@@ -1018,6 +1020,24 @@ footer p {
 }
 
 /* ============ CALCULATOR UTILITIES ============ */
+.calc-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.06);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-family: 'Poppins', sans-serif;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.calc-input::placeholder { color: rgba(255,255,255,0.3); }
+.calc-input:focus {
+  border-color: #23D3FF;
+  background: rgba(35,211,255,0.06);
+}
+
 .glass-card {
   background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(12px);
