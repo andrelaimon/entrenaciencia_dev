@@ -17,6 +17,7 @@ PDFs are not served from the site — leads receive resources by email manually 
 | `notes.md` | Original lead capture implementation and Supabase RLS notes |
 | `DATA_COLLECTION.md` | Active data collection strategy (identity, attribution, tables, pixels) |
 | `data_collection_todo.MD` | Documented future work for Tier 2/3/4 collection |
+| `DASHBOARDS_PLAN.md` | Metabase + Looker Studio setup plan with starter SQL queries |
 | `supabase-schema.sql` | Complete database schema — run in Supabase SQL Editor |
 
 ---
@@ -43,6 +44,15 @@ PDFs are not served from the site — leads receive resources by email manually 
 - [ ] **"Quiénes somos" navbar link** — currently `#`; needs an About page or replace with anchor to the Pillars section
 - [ ] **Contact email mailbox** — `hola@entrenaconciencia.com` is hardcoded in old footer code paths but no actual mailbox is confirmed
 - [ ] **Mobile QA** — the redesigned homepage's "Why" section (evidence paper + guru cards mockup) has a complex absolute-positioned layout that needs a real mobile pass
+
+### 🟢 Dashboards & analytics tooling
+See `DASHBOARDS_PLAN.md` for the full setup plan with starter SQL queries.
+
+- [ ] **Week 1:** run starter funnel queries directly in Supabase SQL editor (no new tools yet)
+- [ ] **Week 2-3:** create `analytics_reader` Postgres role, deploy Metabase on Railway (~$5/mo), build 6 starter dashboard cards
+- [ ] **Week 4+:** set up Looker Studio with GA4 native connector for traffic/marketing dashboards
+- [ ] **3+ months in:** if ad spend > $500/mo, add Supermetrics for unified Meta/TikTok ad spend in Looker Studio
+- [ ] **UTM tagging convention** — agree on a consistent scheme for `utm_source`/`medium`/`campaign`/`content` so Metabase + Looker Studio can stitch attribution data together (see `DASHBOARDS_PLAN.md` for the convention)
 
 ### 🟢 Tier 2/3/4 data collection
 See `data_collection_todo.MD` for full SQL and code patterns. Implement Tier 2 only after observing Tier 1 for 2–4 weeks.
