@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import CourseModal from './CourseModal';
 
@@ -8,15 +8,22 @@ const navLinks = [
   { href: '/#inicio', label: 'Inicio' },
   { href: '#', label: 'Quiénes somos' },
   { href: '/#recursos', label: 'Recursos' },
-  { href: '#', label: 'Contacto' },
+  { href: '/#contacto', label: 'Contacto' },
 ];
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [courseModalOpen, setCourseModalOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
-    <nav>
+    <nav className={scrolled ? 'nav-scrolled' : ''}>
       <a href="/#inicio" className="nav-brand">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="iso" src="/images/isotipo-cyan.png" alt="Entrena con Ciencia" />

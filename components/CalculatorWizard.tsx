@@ -46,6 +46,7 @@ type FormState = {
   obstacle: Obstacle | '';
   name: string;
   email: string;
+  whatsapp: string;
 };
 
 const ACTIVITY_TIERS: ActivityLevel[] = [1.375, 1.55, 1.725, 1.9, 2.0];
@@ -75,7 +76,6 @@ const SCREENING_CHECKBOXES: { id: keyof ScreeningFlags; label: string; disclaime
   {
     id: 'restrictiveDiet',
     label: 'He seguido una dieta muy restrictiva o baja en calorías en los últimos 3 meses',
-    disclaimer: 'Al indicar una restricción alimentaria reciente, estos datos pueden influir en el metabolismo, peso y comportamiento. Se recomienda evaluación profesional antes de continuar.',
   },
 ];
 
@@ -123,6 +123,7 @@ function initialForm(): FormState {
     obstacle: '',
     name: '',
     email: '',
+    whatsapp: '',
   };
 }
 
@@ -132,7 +133,8 @@ function warningLevel(flags: ScreeningFlags): 'none' | 'yellow' | 'red' | 'pregn
     (flags.medical ? 1 : 0) +
     (flags.medications ? 1 : 0) +
     (flags.weightChange ? 1 : 0) +
-    (flags.eatingControl ? 1 : 0);
+    (flags.eatingControl ? 1 : 0) +
+    (flags.restrictiveDiet ? 1 : 0);
   if (count >= 2) return 'red';
   if (count === 1) return 'yellow';
   return 'none';
@@ -184,8 +186,6 @@ export default function CalculatorWizard() {
 
   return (
     <div className="max-w-3xl mx-auto py-12 px-6">
-      <StepIndicator current={step} />
-
       <AnimatePresence mode="wait">
         {submitted ? (
           <ConfirmationStep key="done" />
@@ -238,18 +238,19 @@ export default function CalculatorWizard() {
                   obstacle: form.obstacle,
                   name: form.name.trim(),
                   email: form.email.trim(),
+                  whatsapp: form.whatsapp.trim() || null,
                   flags,
                   klaviyoProps: { obstacle: form.obstacle, restrictive_diet: flags.restrictiveDiet },
                   ...getTrackingContext(),
                 };
 
-                const res = await fetch('/api/calculator-submit', {
+                // Save to DB in the background — don't block the report on it
+                fetch('/api/calculator-submit', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify(payload),
-                });
+                }).catch(() => {});
 
-                if (!res.ok) throw new Error('submit_failed');
                 submittedRef.current = true;
                 fireConversionEvent('CompleteRegistration', 'CompleteRegistration', {
                   content_name: 'Calculadora',
@@ -258,7 +259,7 @@ export default function CalculatorWizard() {
                 });
                 setSubmitted(true);
               } catch {
-                setSubmitError('No pudimos enviar tus datos. Intenta de nuevo en unos segundos.');
+                setSubmitError('Ocurrió un error inesperado. Intenta de nuevo.');
               } finally {
                 setSubmitting(false);
               }
@@ -610,6 +611,9 @@ function WarningBox({ level }: { level: 'yellow' | 'red' | 'pregnancy' }) {
 
 /* ──────────────────────────────── Form ──────────────────────────────── */
 
+const FORM_SUB_STEP_TITLES = ['Tus medidas', 'Tu actividad', 'Tu objetivo', 'Tus datos'];
+const FORM_SUB_STEPS = FORM_SUB_STEP_TITLES.length;
+
 function FormStep({ form, setForm, submitting, submitError, onBack, onSubmit }: {
   form: FormState;
   setForm: (f: FormState) => void;
@@ -618,178 +622,251 @@ function FormStep({ form, setForm, submitting, submitError, onBack, onSubmit }: 
   onBack: () => void;
   onSubmit: () => void;
 }) {
+  const [subStep, setSubStep] = useState(0);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const touch = (key: string) => setTouched((t) => ({ ...t, [key]: true }));
+
+  const metric = form.units === 'metric';
+
   const ageNum = form.age === '' ? NaN : Number(form.age);
-  const ageValid = !Number.isNaN(ageNum) && ageNum >= 18 && ageNum <= 80;
+  const ageValid = !Number.isNaN(ageNum) && ageNum >= 5 && ageNum <= 120;
   const ageTouched = form.age !== '';
-  const weightValid = form.weight !== '' && Number(form.weight) > 0;
-  const heightValid = form.height !== '' && Number(form.height) > 0;
+
+  const weightNum = Number(form.weight);
+  const [weightMin, weightMax] = metric ? [20, 400] : [44, 880];
+  const weightValid = form.weight !== '' && weightNum >= weightMin && weightNum <= weightMax;
+  const weightTouched = touched.weight || false;
+
+  const heightNum = Number(form.height);
+  const [heightMin, heightMax] = metric ? [100, 250] : [39, 98];
+  const heightValid = form.height !== '' && heightNum >= heightMin && heightNum <= heightMax;
+  const heightTouched = touched.height || false;
+
   const bfValid = form.bodyFat === '' || (Number(form.bodyFat) >= 5 && Number(form.bodyFat) <= 60);
   const emailValid = EMAIL_REGEX.test(form.email);
   const nameValid = form.name.trim().length > 0;
 
-  const formValid =
-    ageValid && weightValid && heightValid && bfValid &&
-    form.activity !== null && form.goal !== null &&
-    form.obstacle !== '' && nameValid && emailValid;
+  const subStepValid = [
+    ageValid && weightValid && heightValid,
+    form.activity !== null && bfValid,
+    form.goal !== null && form.obstacle !== '',
+    nameValid && emailValid,
+  ];
 
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm({ ...form, [key]: value });
 
+  function handleNext() {
+    if (subStep < FORM_SUB_STEPS - 1) setSubStep(subStep + 1);
+    else onSubmit();
+  }
+
+  function handleBack() {
+    if (subStep > 0) setSubStep(subStep - 1);
+    else onBack();
+  }
+
   return (
     <Card>
-      <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: '#23D3FF' }}>
-        Paso 3 · Calculadora
-      </p>
-      <h2 className="text-2xl md:text-3xl font-extrabold mb-6 leading-tight" style={{ color: '#ffffff', fontWeight: 800 }}>
-        Tus datos
-      </h2>
-
-      {/* Units */}
-      <SectionLabel>Sistema de unidades</SectionLabel>
-      <div className="flex gap-2 mb-1">
-        {(['metric', 'imperial'] as const).map((u) => (
-          <PillButton key={u} active={form.units === u} onClick={() => setForm({ ...form, units: u, weight: '', height: '' })}>
-            {u === 'metric' ? 'Métrico (kg/cm)' : 'Imperial (lb/in)'}
-          </PillButton>
+      {/* Progress bar */}
+      <div className="flex gap-1.5 mb-5">
+        {Array.from({ length: FORM_SUB_STEPS }).map((_, i) => (
+          <div key={i} className="flex-1 h-1 rounded-full" style={{
+            background: i <= subStep ? '#23D3FF' : 'rgba(255,255,255,0.1)',
+            transition: 'background 0.3s',
+          }} />
         ))}
       </div>
-      <p className="text-xs mb-8" style={{ color: 'rgba(255,255,255,0.35)' }}>
-        Cambiar unidades reinicia peso y talla.
-      </p>
 
-      {/* Personal data */}
-      <SectionLabel>Datos personales</SectionLabel>
-      <div className="grid md:grid-cols-2 gap-4 mb-8">
-        <Field label="Edad (18–80)">
-          <input
-            type="number" min={18} max={80}
-            value={form.age} onChange={(e) => update('age', e.target.value)}
-            className="calc-input" placeholder="30"
-          />
-          {ageTouched && !ageValid && (
-            <p className="text-xs mt-1" style={{ color: '#EF4444' }}>Ingresa una edad entre 18 y 80.</p>
-          )}
-        </Field>
+      <h2 className="text-2xl md:text-3xl font-extrabold mb-6 leading-tight" style={{ color: '#ffffff', fontWeight: 800 }}>
+        {FORM_SUB_STEP_TITLES[subStep]}
+      </h2>
 
-        <Field label="Sexo biológico">
-          <div className="flex gap-2">
-            {(['male', 'female'] as const).map((s) => (
-              <PillButton key={s} active={form.sex === s} onClick={() => update('sex', s)}>
-                {s === 'male' ? 'Masculino' : 'Femenino'}
+      {subStep === 0 && (
+        <>
+          <SectionLabel>Sistema de unidades</SectionLabel>
+          <div className="flex gap-2 mb-1">
+            {(['metric', 'imperial'] as const).map((u) => (
+              <PillButton key={u} active={form.units === u} onClick={() => setForm({ ...form, units: u, weight: '', height: '' })}>
+                {u === 'metric' ? 'Métrico (kg/cm)' : 'Imperial (lb/in)'}
               </PillButton>
             ))}
           </div>
-        </Field>
+          <p className="text-xs mb-8" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            Cambiar unidades reinicia peso y talla.
+          </p>
 
-        <Field label={`Peso (${form.units === 'metric' ? 'kg' : 'lb'})`}>
-          <input
-            type="number" min={0}
-            value={form.weight} onChange={(e) => update('weight', e.target.value)}
-            className="calc-input" placeholder={form.units === 'metric' ? '70' : '155'}
-          />
-        </Field>
+          <SectionLabel>Datos personales</SectionLabel>
+          <div className="grid md:grid-cols-2 gap-4 mb-4">
+            <Field label="Edad">
+              <input
+                type="number" min={5} max={120}
+                value={form.age} onChange={(e) => update('age', e.target.value)}
+                className="calc-input" placeholder="30"
+              />
+              {ageTouched && !ageValid && (
+                <p className="text-xs mt-1" style={{ color: '#EF4444' }}>Ingresa una edad válida.</p>
+              )}
+            </Field>
 
-        <Field label={`Talla (${form.units === 'metric' ? 'cm' : 'in'})`}>
-          <input
-            type="number" min={0}
-            value={form.height} onChange={(e) => update('height', e.target.value)}
-            className="calc-input" placeholder={form.units === 'metric' ? '175' : '69'}
-          />
-        </Field>
-      </div>
+            <Field label="Sexo biológico">
+              <div className="flex gap-2">
+                {(['male', 'female'] as const).map((s) => (
+                  <PillButton key={s} active={form.sex === s} onClick={() => update('sex', s)}>
+                    {s === 'male' ? 'Masculino' : 'Femenino'}
+                  </PillButton>
+                ))}
+              </div>
+            </Field>
 
-      {/* Activity */}
-      <SectionLabel>Nivel de actividad</SectionLabel>
-      <p className="text-sm italic mb-4 leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-        Deja el nivel que describe tu semana típica, no la ideal.
-      </p>
-      <div className="flex flex-col gap-2 mb-8">
-        {ACTIVITY_TIERS.map((tier) => (
-          <RadioCard
-            key={tier} accent="#23D3FF"
-            active={form.activity === tier} onClick={() => update('activity', tier)}
-            title={activityLabels[tier].split(' — ')[0]}
-            hint={activityLabels[tier].split(' — ').slice(1).join(' — ')}
-          />
-        ))}
-      </div>
+            <Field label={`Peso (${metric ? 'kg' : 'lb'})`}>
+              <input
+                type="number" min={weightMin} max={weightMax}
+                value={form.weight}
+                onChange={(e) => update('weight', e.target.value)}
+                onBlur={() => touch('weight')}
+                className="calc-input" placeholder={metric ? '70' : '155'}
+              />
+              {weightTouched && !weightValid && form.weight !== '' && (
+                <p className="text-xs mt-1" style={{ color: '#EF4444' }}>
+                  Ingresa un peso entre {weightMin} y {weightMax} {metric ? 'kg' : 'lb'}.
+                </p>
+              )}
+              {weightTouched && form.weight === '' && (
+                <p className="text-xs mt-1" style={{ color: '#EF4444' }}>Este campo es obligatorio.</p>
+              )}
+            </Field>
 
-      {/* Body fat */}
-      <SectionLabel>% de grasa corporal (opcional)</SectionLabel>
-      <Field label="">
-        <input
-          type="number" min={5} max={60}
-          value={form.bodyFat} onChange={(e) => update('bodyFat', e.target.value)}
-          className="calc-input" placeholder="18"
-        />
-        <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
-          {form.bodyFat === ''
-            ? 'Si no lo conoces, calcularemos tus resultados con el método Mifflin-St. Jeor.'
-            : !bfValid
-              ? 'Ingresa un valor entre 5 y 60.'
-              : 'Usaremos el método Katch-McArdle para una estimación más precisa.'}
-        </p>
-      </Field>
-
-      {/* Goal */}
-      <SectionLabel>Objetivo</SectionLabel>
-      <div className="flex flex-col gap-2 mb-8 mt-3">
-        {GOAL_ORDER.map((g) => (
-          <RadioCard
-            key={g} accent="#FFC300"
-            active={form.goal === g} onClick={() => update('goal', g)}
-            title={goalLabels[g].title} hint={goalLabels[g].hint}
-          />
-        ))}
-      </div>
-
-      {/* Obstacle */}
-      <SectionLabel>¿Cuál es tu mayor obstáculo para lograr tu objetivo?</SectionLabel>
-      <div className="flex flex-col gap-2 mb-8 mt-3">
-        {OBSTACLES.map((o) => (
-          <RadioCard
-            key={o.id} accent="#9CE2B6"
-            active={form.obstacle === o.id} onClick={() => update('obstacle', o.id)}
-            title={o.label}
-          />
-        ))}
-      </div>
-
-      {/* Contact */}
-      <SectionLabel>Datos de contacto</SectionLabel>
-      <div className="grid md:grid-cols-2 gap-4 mb-8 mt-3">
-        <Field label="Nombre">
-          <input
-            type="text" value={form.name} onChange={(e) => update('name', e.target.value)}
-            className="calc-input" placeholder="Tu nombre"
-          />
-        </Field>
-        <Field label="Correo electrónico">
-          <input
-            type="email" value={form.email} onChange={(e) => update('email', e.target.value)}
-            className="calc-input" placeholder="tu@correo.com"
-          />
-        </Field>
-      </div>
-
-      {submitError && (
-        <div className="p-4 rounded-xl mb-4 text-sm" style={{ background: 'rgba(239,68,68,0.12)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.3)' }}>
-          {submitError}
-        </div>
+            <Field label={`Talla (${metric ? 'cm' : 'in'})`}>
+              <input
+                type="number" min={heightMin} max={heightMax}
+                value={form.height}
+                onChange={(e) => update('height', e.target.value)}
+                onBlur={() => touch('height')}
+                className="calc-input" placeholder={metric ? '175' : '69'}
+              />
+              {heightTouched && !heightValid && form.height !== '' && (
+                <p className="text-xs mt-1" style={{ color: '#EF4444' }}>
+                  Ingresa una talla entre {heightMin} y {heightMax} {metric ? 'cm' : 'in'}.
+                </p>
+              )}
+              {heightTouched && form.height === '' && (
+                <p className="text-xs mt-1" style={{ color: '#EF4444' }}>Este campo es obligatorio.</p>
+              )}
+            </Field>
+          </div>
+        </>
       )}
 
-      <p className="text-xs leading-relaxed mb-6" style={{ color: 'rgba(255,255,255,0.3)' }}>
-        Estimaciones derivadas de ecuaciones predictivas y modelos poblacionales. No constituyen diagnóstico ni reemplazan la valoración clínica individual.
-      </p>
+      {subStep === 1 && (
+        <>
+          <SectionLabel>Nivel de actividad</SectionLabel>
+          <p className="text-sm italic mb-4 leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            Deja el nivel que describe tu semana típica, no la ideal.
+          </p>
+          <div className="flex flex-col gap-2 mb-8">
+            {ACTIVITY_TIERS.map((tier) => (
+              <RadioCard
+                key={tier} accent="#23D3FF"
+                active={form.activity === tier} onClick={() => update('activity', tier)}
+                title={activityLabels[tier].split(' — ')[0]}
+                hint={activityLabels[tier].split(' — ').slice(1).join(' — ')}
+              />
+            ))}
+          </div>
 
-      <div className="flex items-center justify-between">
-        <BackLink onClick={onBack} />
-        <PrimaryButton onClick={onSubmit} disabled={!formValid || submitting}>
-          {submitting ? 'Enviando…' : 'Recibir mi reporte personalizado'}
-          {!submitting && <ArrowRight size={16} />}
+          <SectionLabel>% de grasa corporal (opcional)</SectionLabel>
+          <Field label="">
+            <input
+              type="number" min={5} max={60}
+              value={form.bodyFat} onChange={(e) => update('bodyFat', e.target.value)}
+              className="calc-input" placeholder="18"
+            />
+            <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              {form.bodyFat === ''
+                ? 'Si no lo conoces, calcularemos tus resultados con el método Mifflin-St. Jeor.'
+                : !bfValid
+                  ? 'Ingresa un valor entre 5 y 60.'
+                  : 'Usaremos el método Katch-McArdle para una estimación más precisa.'}
+            </p>
+          </Field>
+        </>
+      )}
+
+      {subStep === 2 && (
+        <>
+          <SectionLabel>Objetivo</SectionLabel>
+          <div className="flex flex-col gap-2 mb-8 mt-3">
+            {GOAL_ORDER.map((g) => (
+              <RadioCard
+                key={g} accent="#FFC300"
+                active={form.goal === g} onClick={() => update('goal', g)}
+                title={goalLabels[g].title} hint={goalLabels[g].hint}
+              />
+            ))}
+          </div>
+
+          <SectionLabel>¿Cuál es tu mayor obstáculo?</SectionLabel>
+          <div className="flex flex-col gap-2 mt-3">
+            {OBSTACLES.map((o) => (
+              <RadioCard
+                key={o.id} accent="#9CE2B6"
+                active={form.obstacle === o.id} onClick={() => update('obstacle', o.id)}
+                title={o.label}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      {subStep === 3 && (
+        <>
+          <SectionLabel>Datos de contacto</SectionLabel>
+          <div className="flex flex-col gap-4 mb-8 mt-3">
+            <Field label="Nombre">
+              <input
+                type="text" value={form.name} onChange={(e) => update('name', e.target.value)}
+                className="calc-input" placeholder="Tu nombre"
+              />
+            </Field>
+            <Field label="Correo electrónico">
+              <input
+                type="email" value={form.email} onChange={(e) => update('email', e.target.value)}
+                className="calc-input" placeholder="tu@correo.com"
+              />
+            </Field>
+            <Field label="WhatsApp (opcional)">
+              <input
+                type="tel" value={form.whatsapp} onChange={(e) => update('whatsapp', e.target.value)}
+                className="calc-input" placeholder="+1 555 123 4567"
+              />
+            </Field>
+          </div>
+
+          {submitError && (
+            <div className="p-4 rounded-xl mb-4 text-sm" style={{ background: 'rgba(239,68,68,0.12)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.3)' }}>
+              {submitError}
+            </div>
+          )}
+
+          <p className="text-xs leading-relaxed mb-6" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            Estimaciones derivadas de ecuaciones predictivas y modelos poblacionales. No constituyen diagnóstico ni reemplazan la valoración clínica individual.
+          </p>
+        </>
+      )}
+
+      <div className="flex items-center justify-between mt-6">
+        <BackLink onClick={handleBack} />
+        <PrimaryButton
+          onClick={handleNext}
+          disabled={!subStepValid[subStep] || (subStep === FORM_SUB_STEPS - 1 && submitting)}
+        >
+          {subStep === FORM_SUB_STEPS - 1
+            ? (submitting ? 'Enviando…' : 'Recibir mi reporte')
+            : 'Continuar'}
+          <ArrowRight size={16} />
         </PrimaryButton>
       </div>
-
     </Card>
   );
 }

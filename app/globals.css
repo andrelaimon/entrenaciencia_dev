@@ -40,8 +40,10 @@ body {
   position: absolute;
   inset: 0;
   background-image:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 173'><polygon points='100,5 195,50 195,123 100,168 5,123 5,50' fill='none' stroke='%2323D3FF' stroke-width='1.2' opacity='0.06'/></svg>");
-  background-size: 200px 173px;
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 180'><polygon points='52,30 104,60 104,120 52,150 0,120 0,60' fill='none' stroke='%2323D3FF' stroke-width='1.2' opacity='0.06'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 180'><polygon points='52,30 104,60 104,120 52,150 0,120 0,60' fill='none' stroke='%2323D3FF' stroke-width='1.2' opacity='0.06'/></svg>");
+  background-size: 80px 138px, 80px 138px;
+  background-position: 0 0, 40px 69px;
   background-repeat: repeat;
   pointer-events: none;
   z-index: 0;
@@ -51,8 +53,10 @@ body {
   position: absolute;
   inset: 0;
   background-image:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 173' width='200' height='173'><polygon points='100,5 195,50 195,123 100,168 5,123 5,50' fill='none' stroke='%23017FA7' stroke-width='1' opacity='0.05'/></svg>");
-  background-size: 200px 173px;
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 180'><polygon points='52,30 104,60 104,120 52,150 0,120 0,60' fill='none' stroke='%23017FA7' stroke-width='1' opacity='0.05'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 180'><polygon points='52,30 104,60 104,120 52,150 0,120 0,60' fill='none' stroke='%23017FA7' stroke-width='1' opacity='0.05'/></svg>");
+  background-size: 80px 138px, 80px 138px;
+  background-position: 0 0, 40px 69px;
   background-repeat: repeat;
   pointer-events: none;
   z-index: 0;
@@ -62,8 +66,10 @@ body {
   position: absolute;
   inset: 0;
   background-image:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 173'><polygon points='100,5 195,50 195,123 100,168 5,123 5,50' fill='none' stroke='%2323D3FF' stroke-width='1' opacity='0.03'/></svg>");
-  background-size: 280px 242px;
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 180'><polygon points='52,30 104,60 104,120 52,150 0,120 0,60' fill='none' stroke='%2323D3FF' stroke-width='1' opacity='0.03'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 180'><polygon points='52,30 104,60 104,120 52,150 0,120 0,60' fill='none' stroke='%2323D3FF' stroke-width='1' opacity='0.03'/></svg>");
+  background-size: 80px 138px, 80px 138px;
+  background-position: 0 0, 40px 69px;
   background-repeat: repeat;
   pointer-events: none;
   z-index: 0;
@@ -89,6 +95,21 @@ nav {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border-soft);
+  transition: padding 0.3s ease, background 0.3s ease;
+}
+
+nav.nav-scrolled {
+  padding: 8px 48px;
+  background: rgba(1, 13, 21, 0.97);
+}
+
+nav.nav-scrolled .nav-brand .iso {
+  width: 30px;
+  height: 30px;
+}
+
+nav.nav-scrolled .nav-brand {
+  font-size: 13px;
 }
 
 .nav-brand {
@@ -101,12 +122,14 @@ nav {
   text-transform: uppercase;
   text-decoration: none;
   color: var(--white);
+  transition: font-size 0.3s ease;
 }
 
 .nav-brand .iso {
   width: 42px;
   height: 42px;
   object-fit: contain;
+  transition: width 0.3s ease, height 0.3s ease;
 }
 
 .nav-brand .name span { color: var(--cyan); }
@@ -204,6 +227,15 @@ nav {
 @keyframes floaty {
   0%, 100% { transform: translateY(0); }
   50%       { transform: translateY(-16px); }
+}
+
+@keyframes hex-drift {
+  0%   { transform: translate(0, 0); }
+  100% { transform: translate(1440px, 800px); }
+}
+
+.hex-drift-group {
+  animation: hex-drift 80s linear infinite;
 }
 
 .hero h1 {
@@ -321,9 +353,9 @@ nav {
   pointer-events: none;
   will-change: transform;
 }
-.hex-deco-1 { width: 180px; height: 180px; top: 12%; left: 6%; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); animation: floaty 4s ease-in-out infinite; }
-.hex-deco-2 { width: 120px; height: 120px; top: 60%; right: 8%; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); animation: floaty 5s ease-in-out infinite; animation-delay: -2s; }
-.hex-deco-3 { width: 80px; height: 80px; bottom: 12%; left: 14%; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); animation: floaty 3.5s ease-in-out infinite; animation-delay: -1s; }
+.hex-deco-1 { width: 140px; height: 140px; top: 12%; left: 6%; clip-path: polygon(25% 7%, 75% 7%, 100% 50%, 75% 93%, 25% 93%, 0% 50%); animation: floaty 4s ease-in-out infinite; }
+.hex-deco-2 { width: 90px; height: 90px; top: 60%; right: 8%; clip-path: polygon(25% 7%, 75% 7%, 100% 50%, 75% 93%, 25% 93%, 0% 50%); animation: floaty 5s ease-in-out infinite; animation-delay: -2s; }
+.hex-deco-3 { width: 60px; height: 60px; bottom: 12%; left: 14%; clip-path: polygon(25% 7%, 75% 7%, 100% 50%, 75% 93%, 25% 93%, 0% 50%); animation: floaty 3.5s ease-in-out infinite; animation-delay: -1s; }
 
 /* ============ SECTION SHARED ============ */
 section {
@@ -1087,6 +1119,7 @@ footer p {
 /* ============ RESPONSIVE ============ */
 @media (max-width: 900px) {
   nav { padding: 14px 20px; }
+  nav.nav-scrolled { padding: 6px 20px; }
   .nav-links { gap: 20px; }
   .nav-links a { font-size: 12px; }
   .hero { padding: 120px 20px 60px; }
@@ -1107,6 +1140,20 @@ footer p {
 @media (max-width: 600px) {
   .nav-brand .name { display: none; }
   .hex-deco { display: none; }
+
+  /* Hero */
+  .hero { padding: 100px 20px 70px; min-height: 100svh; }
+  .hero-iso { width: 110px; margin-bottom: 20px; }
+  .hero h1 { font-size: clamp(2rem, 9vw, 2.8rem); margin-bottom: 16px; }
+  .hero h1 .hero-eyebrow-line { font-size: clamp(1.1rem, 5.5vw, 1.5rem); margin-bottom: 10px; }
+  .hero .subhead { font-size: clamp(0.9rem, 4vw, 1rem); margin-bottom: 32px; }
+
+  /* Buttons — full width, comfortable touch targets */
+  .hero-ctas { flex-direction: column; align-items: stretch; gap: 12px; padding: 0 8px; }
+  .btn { padding: 15px 24px; font-size: 13px; letter-spacing: 0.8px; text-align: center; }
+
+  /* Scroll indicator */
+  .scroll-label { font-size: 10px; }
 }
 
 /* Scroll reveal */

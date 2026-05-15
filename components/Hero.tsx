@@ -1,12 +1,11 @@
 'use client';
 
+import HexClusters from './HexClusters';
+
 export default function Hero() {
   return (
     <section className="hero" id="inicio">
-      <div className="hex-pattern" />
-      <div className="hex-deco hex-deco-1" />
-      <div className="hex-deco hex-deco-2" />
-      <div className="hex-deco hex-deco-3" />
+      <HexClusters />
 
       <div className="hero-content">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -31,8 +30,7 @@ export default function Hero() {
       </div>
 
       <a href="#why" className="scroll-indicator" aria-label="Desliza hacia abajo">
-        <span className="scroll-label">Desliza para descubrir</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </a>

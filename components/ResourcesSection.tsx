@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import EmailModal from './EmailModal';
 import { getTrackingContext } from '@/lib/tracking';
 
@@ -126,9 +125,9 @@ export default function ResourcesSection() {
                 <p>{resource.description}</p>
 
                 {resource.kind === 'internal' && resource.href ? (
-                  <Link href={resource.href} className={actionClass}>
+                  <a href={resource.href} className={actionClass}>
                     {actionContent}
-                  </Link>
+                  </a>
                 ) : (
                   <button
                     type="button"

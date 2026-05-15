@@ -46,10 +46,21 @@ const CHALLENGES = [
   { value: 'Tiempo', label: 'Tiempo' },
 ];
 
-const inputStyle = {
-  border: '2px solid #e5e7eb',
-  color: '#1A1A2E',
+const CARD_BG   = '#0d1f35';
+const CYAN      = '#23D3FF';
+const YELLOW    = '#FFC300';
+const NAVY      = '#010d15';
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '12px 16px',
+  borderRadius: '12px',
+  border: '1px solid rgba(255,255,255,0.1)',
+  background: 'rgba(255,255,255,0.05)',
+  color: '#ffffff',
+  fontSize: '14px',
   outline: 'none',
+  transition: 'border-color 0.2s',
 };
 
 function ChipGroup({
@@ -72,9 +83,9 @@ function ChipGroup({
             onClick={() => onChange(o.value)}
             className="px-4 py-2 rounded-full text-sm font-medium transition-all"
             style={{
-              background: active ? 'linear-gradient(135deg, #FFC300 0%, #FFDC6B 100%)' : '#F3F8FC',
-              color: active ? '#1A1A2E' : '#4B5563',
-              border: active ? '2px solid #FFC300' : '2px solid transparent',
+              background: active ? CYAN : 'rgba(255,255,255,0.06)',
+              color: active ? NAVY : 'rgba(255,255,255,0.7)',
+              border: `1px solid ${active ? CYAN : 'rgba(255,255,255,0.12)'}`,
               fontWeight: active ? 700 : 500,
             }}
           >
@@ -83,6 +94,14 @@ function ChipGroup({
         );
       })}
     </div>
+  );
+}
+
+function Label({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-sm font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.85)' }}>
+      {children}
+    </p>
   );
 }
 
@@ -141,7 +160,6 @@ export default function CourseModal({ isOpen, onClose }: CourseModalProps) {
 
     setSubmitting(false);
     setStep('success');
-
     setTimeout(handleClose, 3500);
   }
 
@@ -150,171 +168,147 @@ export default function CourseModal({ isOpen, onClose }: CourseModalProps) {
   return createPortal(
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ background: 'rgba(10, 22, 40, 0.85)', backdropFilter: 'blur(6px)' }}
+      style={{ background: 'rgba(1,10,20,0.88)', backdropFilter: 'blur(8px)' }}
       onClick={(e) => e.target === e.currentTarget && handleClose()}
     >
       <div
         className="relative w-full max-w-md rounded-2xl shadow-2xl overflow-y-auto"
-        style={{ background: 'white', maxHeight: '90vh' }}
+        style={{
+          background: CARD_BG,
+          border: '1px solid rgba(35,211,255,0.15)',
+          maxHeight: '90vh',
+        }}
       >
-        {/* Gold accent bar */}
-        <div style={{ height: 4, background: 'linear-gradient(90deg, #FFC300 0%, #FFDC6B 100%)' }} />
+        {/* Cyan accent bar */}
+        <div style={{ height: 3, background: `linear-gradient(90deg, ${CYAN} 0%, rgba(35,211,255,0.3) 100%)` }} />
 
         <div className="p-8">
           <button
             onClick={handleClose}
-            className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute top-3 right-4 transition-colors"
+            style={{ color: 'rgba(255,255,255,0.4)' }}
             aria-label="Cerrar"
           >
             <X size={20} />
           </button>
 
+          {/* Success */}
           {step === 'success' && (
             <div className="text-center py-6 flex flex-col items-center gap-4">
               <CheckCircle size={56} color="#7ED957" strokeWidth={1.5} />
-              <h3 className="text-2xl font-extrabold" style={{ color: '#1A1A2E', fontWeight: 800 }}>
+              <h3 className="text-2xl font-extrabold" style={{ color: '#ffffff', fontWeight: 800 }}>
                 ¡Estás en la lista!
               </h3>
-              <p className="text-gray-500 text-sm leading-relaxed">
+              <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
                 Gracias por tu interés y tus respuestas. Te avisaremos en cuanto el curso esté disponible.
               </p>
             </div>
           )}
 
+          {/* Step 1 — Contact */}
           {step === 'contact' && (
             <>
-              {/* Step indicator */}
-              <div className="flex items-center gap-2 mb-6">
-                <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: '#FFC300', color: '#1A1A2E' }}>1</span>
-                <div className="flex-1 h-0.5" style={{ background: '#e5e7eb' }} />
-                <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: '#e5e7eb', color: '#9ca3af' }}>2</span>
+              {/* Progress */}
+              <div className="flex gap-1.5 mb-6 mt-4">
+                <div className="flex-1 h-1 rounded-full" style={{ background: CYAN }} />
+                <div className="flex-1 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }} />
               </div>
 
-              <h3 className="text-2xl font-extrabold mb-1" style={{ color: '#1A1A2E', fontWeight: 800 }}>
+              <h3 className="text-2xl font-extrabold mb-1" style={{ color: '#ffffff', fontWeight: 800 }}>
                 Únete al curso
               </h3>
-              <p className="text-sm text-gray-500 mb-6">
+              <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.5)' }}>
                 Te avisamos cuando esté listo. Primero cuéntanos quién eres.
               </p>
 
               <form onSubmit={handleContactNext} className="flex flex-col gap-4">
                 <input
-                  type="text"
-                  placeholder="Tu nombre"
-                  value={name}
+                  type="text" placeholder="Tu nombre" value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl text-sm border transition-colors"
                   style={inputStyle}
-                  onFocus={(e) => (e.target.style.borderColor = '#23D3FF')}
-                  onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+                  onFocus={(e) => (e.target.style.borderColor = CYAN)}
+                  onBlur={(e) => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
                 />
                 <input
-                  type="email"
-                  placeholder="tu@email.com"
-                  value={email}
+                  type="email" placeholder="tu@email.com" value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl text-sm border transition-colors"
                   style={inputStyle}
-                  onFocus={(e) => (e.target.style.borderColor = '#23D3FF')}
-                  onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+                  onFocus={(e) => (e.target.style.borderColor = CYAN)}
+                  onBlur={(e) => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
                 />
                 <input
-                  type="tel"
-                  placeholder="WhatsApp (ej. +1 555 123 4567)"
-                  value={whatsapp}
+                  type="tel" placeholder="WhatsApp (ej. +1 555 123 4567)" value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl text-sm border transition-colors"
                   style={inputStyle}
-                  onFocus={(e) => (e.target.style.borderColor = '#23D3FF')}
-                  onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+                  onFocus={(e) => (e.target.style.borderColor = CYAN)}
+                  onBlur={(e) => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
                 />
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
-                    type="checkbox"
-                    checked={accepted}
+                    type="checkbox" checked={accepted}
                     onChange={(e) => setAccepted(e.target.checked)}
-                    className="mt-0.5 w-4 h-4 accent-blue-600 flex-shrink-0"
+                    className="mt-0.5 w-4 h-4 flex-shrink-0"
+                    style={{ accentColor: CYAN }}
                   />
-                  <span className="text-xs text-gray-500 leading-relaxed">
+                  <span className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
                     Acepto recibir contenido educativo y recursos de{' '}
-                    <strong style={{ color: '#224277' }}>Entrena con Ciencia</strong>
+                    <strong style={{ color: CYAN }}>Entrena con Ciencia</strong>
                   </span>
                 </label>
 
-                {error && <p className="text-red-500 text-xs">{error}</p>}
+                {error && <p className="text-xs" style={{ color: '#f87171' }}>{error}</p>}
 
                 <button
                   type="submit"
                   className="w-full py-3 text-sm font-bold rounded-full flex items-center justify-center gap-2 mt-1"
-                  style={{
-                    background: 'linear-gradient(135deg, #FFC300 0%, #FFDC6B 100%)',
-                    color: '#1A1A2E',
-                    fontWeight: 800,
-                  }}
+                  style={{ background: `linear-gradient(135deg, ${YELLOW} 0%, #FFDC6B 100%)`, color: NAVY, fontWeight: 800 }}
                 >
-                  Continuar
-                  <ChevronRight size={16} />
+                  Continuar <ChevronRight size={16} />
                 </button>
               </form>
             </>
           )}
 
+          {/* Step 2 — Survey */}
           {step === 'survey' && (
             <>
-              {/* Step indicator */}
-              <div className="flex items-center gap-2 mb-6">
-                <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: '#7ED957', color: 'white' }}>✓</span>
-                <div className="flex-1 h-0.5" style={{ background: '#FFC300' }} />
-                <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: '#FFC300', color: '#1A1A2E' }}>2</span>
+              {/* Progress */}
+              <div className="flex gap-1.5 mb-6 mt-4">
+                <div className="flex-1 h-1 rounded-full" style={{ background: CYAN }} />
+                <div className="flex-1 h-1 rounded-full" style={{ background: CYAN }} />
               </div>
 
-              <h3 className="text-2xl font-extrabold mb-1" style={{ color: '#1A1A2E', fontWeight: 800 }}>
+              <h3 className="text-2xl font-extrabold mb-1" style={{ color: '#ffffff', fontWeight: 800 }}>
                 Cuéntanos un poco más
               </h3>
-              <p className="text-sm text-gray-500 mb-6">
+              <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.5)' }}>
                 Así podemos diseñar el curso a tu medida.
               </p>
 
               <form onSubmit={handleSurveySubmit} className="flex flex-col gap-5">
                 <div>
-                  <p className="text-sm font-semibold mb-2" style={{ color: '#1A1A2E' }}>
-                    ¿Cuál es tu objetivo principal?
-                  </p>
+                  <Label>¿Cuál es tu objetivo principal?</Label>
                   <ChipGroup options={GOALS} value={survey.goal} onChange={(v) => setSurvey((s) => ({ ...s, goal: v }))} />
                 </div>
-
                 <div>
-                  <p className="text-sm font-semibold mb-2" style={{ color: '#1A1A2E' }}>
-                    ¿Cuál es tu nivel de experiencia?
-                  </p>
+                  <Label>¿Cuál es tu nivel de experiencia?</Label>
                   <ChipGroup options={LEVELS} value={survey.level} onChange={(v) => setSurvey((s) => ({ ...s, level: v }))} />
                 </div>
-
                 <div>
-                  <p className="text-sm font-semibold mb-2" style={{ color: '#1A1A2E' }}>
-                    ¿Cuántos días a la semana puedes entrenar?
-                  </p>
+                  <Label>¿Cuántos días a la semana puedes entrenar?</Label>
                   <ChipGroup options={DAYS} value={survey.days} onChange={(v) => setSurvey((s) => ({ ...s, days: v }))} />
                 </div>
-
                 <div>
-                  <p className="text-sm font-semibold mb-2" style={{ color: '#1A1A2E' }}>
-                    ¿Qué es lo que más te cuesta?
-                  </p>
+                  <Label>¿Qué es lo que más te cuesta?</Label>
                   <ChipGroup options={CHALLENGES} value={survey.challenge} onChange={(v) => setSurvey((s) => ({ ...s, challenge: v }))} />
                 </div>
 
-                {error && <p className="text-red-500 text-xs">{error}</p>}
+                {error && <p className="text-xs" style={{ color: '#f87171' }}>{error}</p>}
 
                 <button
-                  type="submit"
-                  disabled={submitting}
+                  type="submit" disabled={submitting}
                   className="w-full py-3 text-sm font-bold rounded-full flex items-center justify-center gap-2 mt-1 disabled:opacity-60"
-                  style={{
-                    background: 'linear-gradient(135deg, #FFC300 0%, #FFDC6B 100%)',
-                    color: '#1A1A2E',
-                    fontWeight: 800,
-                  }}
+                  style={{ background: `linear-gradient(135deg, ${YELLOW} 0%, #FFDC6B 100%)`, color: NAVY, fontWeight: 800 }}
                 >
                   {submitting ? 'Enviando…' : 'Unirme al curso'}
                 </button>
