@@ -2,18 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
-import CourseModal from './CourseModal';
 
 const navLinks = [
   { href: '/#inicio', label: 'Inicio' },
-  { href: '#', label: 'Quiénes somos' },
+  { href: '/#metodo', label: 'Quiénes somos' },
   { href: '/#recursos', label: 'Recursos' },
   { href: '/#contacto', label: 'Contacto' },
 ];
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [courseModalOpen, setCourseModalOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -38,13 +36,9 @@ export default function Navbar() {
           </li>
         ))}
         <li>
-          <button
-            type="button"
-            className="nav-cta"
-            onClick={() => setCourseModalOpen(true)}
-          >
+          <a href="/#recursos" className="nav-cta">
             Nuestro curso
-          </button>
+          </a>
         </li>
       </ul>
 
@@ -67,23 +61,21 @@ export default function Navbar() {
             <a
               key={link.label}
               href={link.href}
-              className="text-white/80 hover:text-white text-base font-medium py-2 border-b border-white/10"
+              className="text-white hover:text-white text-base font-medium py-2 border-b border-white/10"
               onClick={() => setMenuOpen(false)}
             >
               {link.label}
             </a>
           ))}
-          <button
-            type="button"
+          <a
+            href="/#recursos"
             className="nav-cta mt-2 text-center"
-            onClick={() => { setMenuOpen(false); setCourseModalOpen(true); }}
+            onClick={() => setMenuOpen(false)}
           >
             Nuestro curso
-          </button>
+          </a>
         </div>
       )}
-
-      <CourseModal isOpen={courseModalOpen} onClose={() => setCourseModalOpen(false)} />
     </nav>
   );
 }

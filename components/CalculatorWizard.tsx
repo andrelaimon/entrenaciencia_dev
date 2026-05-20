@@ -24,7 +24,6 @@ type Step = 'intro' | 'screening' | 'form';
 
 type ScreeningFlags = {
   medical: boolean;
-  medications: boolean;
   weightChange: boolean;
   eatingControl: boolean;
   pregnancyLactation: boolean;
@@ -32,7 +31,12 @@ type ScreeningFlags = {
   disclaimerAccepted: boolean;
 };
 
-type Obstacle = 'no_time' | 'consistency' | 'what_to_eat' | 'health' | 'other';
+type Obstacle =
+  | 'no_time'
+  | 'food_discipline'
+  | 'training_discipline'
+  | 'exercise_knowledge'
+  | 'other';
 
 type FormState = {
   units: 'metric' | 'imperial';
@@ -47,6 +51,7 @@ type FormState = {
   name: string;
   email: string;
   whatsapp: string;
+  obstacleOther: string;
 };
 
 const ACTIVITY_TIERS: ActivityLevel[] = [1.375, 1.55, 1.725, 1.9, 2.0];
@@ -55,15 +60,11 @@ const GOAL_ORDER: Goal[] = ['leve_loss', 'loss', 'maintain', 'leve_gain', 'gain'
 const SCREENING_CHECKBOXES: { id: keyof ScreeningFlags; label: string; disclaimer?: string }[] = [
   {
     id: 'medical',
-    label: 'Antecedentes de condiciones médicas que puedan influir en el peso corporal o el metabolismo (p. ej., trastornos tiroideos, diabetes mellitus, enfermedad hepática o renal)',
-  },
-  {
-    id: 'medications',
-    label: 'Uso de medicamentos en los últimos 3 meses (ej. corticoides, insulina, algunos psicofármacos)',
+    label: 'Antecedentes de condiciones médicas (tiroides, diabetes, hígado, riñón, etc.) o uso de medicamentos en los últimos 3 meses',
   },
   {
     id: 'weightChange',
-    label: 'Cambio de peso no intencional ≥5% en los últimos 3 meses',
+    label: 'He perdido más del 5% de mi peso corporal en los últimos 3 meses sin intentarlo',
   },
   {
     id: 'eatingControl',
@@ -80,10 +81,10 @@ const SCREENING_CHECKBOXES: { id: keyof ScreeningFlags; label: string; disclaime
 ];
 
 const OBSTACLES: { id: Obstacle; label: string }[] = [
-  { id: 'no_time', label: 'No tengo tiempo para cocinar o planificar' },
-  { id: 'consistency', label: 'Me cuesta mantener la constancia' },
-  { id: 'what_to_eat', label: 'No sé qué debo comer exactamente' },
-  { id: 'health', label: 'Tengo una lesión o condición de salud' },
+  { id: 'no_time', label: 'No tengo tiempo para cocinar' },
+  { id: 'food_discipline', label: 'Me cuesta ser disciplinado con lo que como' },
+  { id: 'training_discipline', label: 'Me cuesta ser disciplinado con el entrenamiento' },
+  { id: 'exercise_knowledge', label: 'No sé qué ejercicios son los más efectivos' },
   { id: 'other', label: 'Otro' },
 ];
 
@@ -101,7 +102,6 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function initialFlags(): ScreeningFlags {
   return {
     medical: false,
-    medications: false,
     weightChange: false,
     eatingControl: false,
     pregnancyLactation: false,
@@ -124,6 +124,7 @@ function initialForm(): FormState {
     name: '',
     email: '',
     whatsapp: '',
+    obstacleOther: '',
   };
 }
 
@@ -131,7 +132,6 @@ function warningLevel(flags: ScreeningFlags): 'none' | 'yellow' | 'red' | 'pregn
   if (flags.pregnancyLactation) return 'pregnancy';
   const count =
     (flags.medical ? 1 : 0) +
-    (flags.medications ? 1 : 0) +
     (flags.weightChange ? 1 : 0) +
     (flags.eatingControl ? 1 : 0) +
     (flags.restrictiveDiet ? 1 : 0);
@@ -168,7 +168,6 @@ export default function CalculatorWizard() {
         goal_selected:            form.goal || null,
         obstacle_selected:        form.obstacle || null,
         flag_medical:             flags.medical,
-        flag_medications:         flags.medications,
         flag_weight_change:       flags.weightChange,
         flag_eating_control:      flags.eatingControl,
         flag_pregnancy_lactation: flags.pregnancyLactation,
@@ -236,6 +235,7 @@ export default function CalculatorWizard() {
                   inputs: { ...calcInput, bodyFat: bf > 0 ? bf : null, units: form.units, macroPreset: 'balanced' },
                   result,
                   obstacle: form.obstacle,
+                  obstacle_other: form.obstacle === 'other' ? form.obstacleOther.trim() || null : null,
                   name: form.name.trim(),
                   email: form.email.trim(),
                   whatsapp: form.whatsapp.trim() || null,
@@ -338,11 +338,12 @@ function PrimaryButton({ children, onClick, disabled, type }: {
       type={type ?? 'button'}
       onClick={onClick}
       disabled={disabled}
-      className="px-8 py-3.5 text-sm font-bold rounded-full inline-flex items-center justify-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed"
+      className="px-8 py-3.5 text-sm font-bold rounded-md inline-flex items-center justify-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed"
       style={{
-        background: 'linear-gradient(135deg, #FFC300 0%, #FFDC6B 100%)',
+        background: '#FFC300',
         color: '#010d15',
         fontWeight: 700,
+        boxShadow: '0 4px 14px rgba(255, 195, 0, 0.25)',
       }}
     >
       {children}
@@ -355,7 +356,7 @@ function BackLink({ onClick }: { onClick: () => void }) {
     <button
       onClick={onClick}
       className="text-sm font-medium transition-colors hover:text-white"
-      style={{ color: 'rgba(255,255,255,0.45)' }}
+      style={{ color: '#ffffff' }}
     >
       ← Atrás
     </button>
@@ -374,7 +375,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   return (
     <div>
       {label && (
-        <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.55)' }}>
+        <label className="block text-xs font-medium mb-1.5" style={{ color: '#ffffff' }}>
           {label}
         </label>
       )}
@@ -405,12 +406,13 @@ function PillButton({ active, onClick, children }: {
   );
 }
 
-function RadioCard({ active, onClick, title, hint, accent }: {
+function RadioCard({ active, onClick, title, hint, accent, hintItalic }: {
   active: boolean;
   onClick: () => void;
   title: string;
   hint?: string;
   accent: string;
+  hintItalic?: boolean;
 }) {
   return (
     <button
@@ -426,7 +428,10 @@ function RadioCard({ active, onClick, title, hint, accent }: {
         {title}
       </p>
       {hint && (
-        <p className="text-xs mt-1 leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+        <p
+          className={`text-xs mt-1 leading-relaxed${hintItalic ? ' italic' : ''}`}
+          style={{ color: '#ffffff' }}
+        >
           {hint}
         </p>
       )}
@@ -438,10 +443,11 @@ function RadioCard({ active, onClick, title, hint, accent }: {
 
 function IntroStep({ onNext }: { onNext: () => void }) {
   const steps = [
-    'Responde el screening inicial — toma menos de un minuto e identifica si tu caso requiere atención médica directa.',
-    'Ingresa tus datos antropométricos y nivel de actividad física real, no el que quisieras tener.',
-    'Selecciona tu objetivo. Los resultados sostenibles vienen de cambios graduales.',
+    'Responde el screening médico inicial (< 1 min).',
+    'Ingresa tus datos antropométricos y tu nivel de actividad física real (30 seg).',
+    'Selecciona tu objetivo.',
     'Te enviamos tu reporte personalizado con tus macros, ejemplos de alimentos y un plan de acción inicial.',
+    'Los resultados sostenibles vienen de cambios graduales.',
   ];
 
   return (
@@ -450,11 +456,10 @@ function IntroStep({ onNext }: { onNext: () => void }) {
         Paso 1 · Introducción
       </p>
       <h1 className="text-3xl md:text-4xl font-extrabold mb-4 leading-tight" style={{ color: '#ffffff', fontWeight: 800 }}>
-        Calculadora de requerimientos energéticos y macronutrientes
+        Calculadora de calorías y macronutrientes
       </h1>
-      <p className="leading-relaxed mb-8" style={{ color: 'rgba(255,255,255,0.65)' }}>
-        Estimación basada en modelos validados para orientar tu ingesta diaria según tus objetivos.
-        Esta herramienta utiliza ecuaciones y modelos clínicos de gasto energético total.
+      <p className="leading-relaxed mb-8" style={{ color: '#ffffff' }}>
+        Estimación basada en modelos clínicos validados para calcular tu ingesta calórica según tus objetivos.
       </p>
 
       <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#23D3FF' }}>
@@ -478,15 +483,15 @@ function IntroStep({ onNext }: { onNext: () => void }) {
             >
               {i + 1}
             </div>
-            <p className="text-sm leading-relaxed pt-1" style={{ color: 'rgba(255,255,255,0.75)' }}>{s}</p>
+            <p className="text-sm leading-relaxed pt-1" style={{ color: '#ffffff' }}>{s}</p>
           </li>
         ))}
       </ol>
 
-      <p className="text-sm mb-8" style={{ color: 'rgba(255,255,255,0.45)' }}>
+      <p className="text-sm mb-8" style={{ color: '#ffffff' }}>
         ¿Quieres entender la ciencia detrás?{' '}
         <Link href="/#recursos" className="font-bold underline" style={{ color: '#23D3FF' }}>
-          Descarga la guía de pérdida de peso en recursos
+          Descarga la guía de pérdida de peso
         </Link>
         .
       </p>
@@ -517,14 +522,13 @@ function ScreeningStep({ flags, setFlags, onBack, onNext }: {
   return (
     <Card>
       <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: '#23D3FF' }}>
-        Paso 2 · Screening
+        Paso 2 · Screening médico
       </p>
       <h2 className="text-2xl md:text-3xl font-extrabold mb-3 leading-tight" style={{ color: '#ffffff', fontWeight: 800 }}>
         Antes de comenzar
       </h2>
-      <p className="leading-relaxed mb-6" style={{ color: 'rgba(255,255,255,0.65)' }}>
-        Para asegurarnos de que esta herramienta es adecuada para tu caso, selecciona si alguna
-        de estas situaciones aplica. Puedes dejarlo en blanco si ninguna aplica.
+      <p className="leading-relaxed mb-6" style={{ color: '#ffffff' }}>
+        Antecedentes de condiciones médicas que puedan influir en tu peso o metabolismo. Selecciona las que apliquen; puedes dejarlo en blanco si ninguna aplica.
       </p>
 
       <div className="flex flex-col gap-3 mb-6">
@@ -543,7 +547,7 @@ function ScreeningStep({ flags, setFlags, onBack, onNext }: {
                 onChange={() => toggle(c.id)}
                 className="mt-1 w-4 h-4 accent-[#23D3FF] flex-shrink-0"
               />
-              <span className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.85)' }}>
+              <span className="text-sm leading-relaxed" style={{ color: '#ffffff' }}>
                 {c.label}
               </span>
             </label>
@@ -649,7 +653,7 @@ function FormStep({ form, setForm, submitting, submitError, onBack, onSubmit }: 
   const subStepValid = [
     ageValid && weightValid && heightValid,
     form.activity !== null && bfValid,
-    form.goal !== null && form.obstacle !== '',
+    form.goal !== null,
     nameValid && emailValid,
   ];
 
@@ -692,7 +696,7 @@ function FormStep({ form, setForm, submitting, submitError, onBack, onSubmit }: 
               </PillButton>
             ))}
           </div>
-          <p className="text-xs mb-8" style={{ color: 'rgba(255,255,255,0.35)' }}>
+          <p className="text-xs mb-8" style={{ color: '#ffffff' }}>
             Cambiar unidades reinicia peso y talla.
           </p>
 
@@ -761,8 +765,8 @@ function FormStep({ form, setForm, submitting, submitError, onBack, onSubmit }: 
       {subStep === 1 && (
         <>
           <SectionLabel>Nivel de actividad</SectionLabel>
-          <p className="text-sm italic mb-4 leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-            Deja el nivel que describe tu semana típica, no la ideal.
+          <p className="text-sm italic mb-4 leading-relaxed" style={{ color: '#ffffff' }}>
+            Selecciona el nivel que mejor represente tu actividad física habitual.
           </p>
           <div className="flex flex-col gap-2 mb-8">
             {ACTIVITY_TIERS.map((tier) => (
@@ -771,6 +775,7 @@ function FormStep({ form, setForm, submitting, submitError, onBack, onSubmit }: 
                 active={form.activity === tier} onClick={() => update('activity', tier)}
                 title={activityLabels[tier].split(' — ')[0]}
                 hint={activityLabels[tier].split(' — ').slice(1).join(' — ')}
+                hintItalic
               />
             ))}
           </div>
@@ -782,7 +787,7 @@ function FormStep({ form, setForm, submitting, submitError, onBack, onSubmit }: 
               value={form.bodyFat} onChange={(e) => update('bodyFat', e.target.value)}
               className="calc-input" placeholder="18"
             />
-            <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            <p className="text-xs mt-1" style={{ color: '#ffffff' }}>
               {form.bodyFat === ''
                 ? 'Si no lo conoces, calcularemos tus resultados con el método Mifflin-St. Jeor.'
                 : !bfValid
@@ -806,7 +811,7 @@ function FormStep({ form, setForm, submitting, submitError, onBack, onSubmit }: 
             ))}
           </div>
 
-          <SectionLabel>¿Cuál es tu mayor obstáculo?</SectionLabel>
+          <SectionLabel>¿Cuál es tu mayor obstáculo? (opcional)</SectionLabel>
           <div className="flex flex-col gap-2 mt-3">
             {OBSTACLES.map((o) => (
               <RadioCard
@@ -816,6 +821,15 @@ function FormStep({ form, setForm, submitting, submitError, onBack, onSubmit }: 
               />
             ))}
           </div>
+          {form.obstacle === 'other' && (
+            <input
+              type="text"
+              value={form.obstacleOther}
+              onChange={(e) => update('obstacleOther', e.target.value)}
+              className="calc-input mt-3"
+              placeholder="Cuéntanos cuál es tu mayor obstáculo"
+            />
+          )}
         </>
       )}
 
@@ -849,7 +863,7 @@ function FormStep({ form, setForm, submitting, submitError, onBack, onSubmit }: 
             </div>
           )}
 
-          <p className="text-xs leading-relaxed mb-6" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          <p className="text-xs leading-relaxed mb-6" style={{ color: '#ffffff' }}>
             Estimaciones derivadas de ecuaciones predictivas y modelos poblacionales. No constituyen diagnóstico ni reemplazan la valoración clínica individual.
           </p>
         </>
@@ -889,7 +903,7 @@ function ConfirmationStep() {
       <h2 className="text-3xl md:text-4xl font-extrabold mb-4" style={{ color: '#ffffff', fontWeight: 800 }}>
         Gracias.
       </h2>
-      <p className="leading-relaxed max-w-md mx-auto mb-8" style={{ color: 'rgba(255,255,255,0.6)' }}>
+      <p className="leading-relaxed max-w-md mx-auto mb-8" style={{ color: '#ffffff' }}>
         Te enviaremos tu reporte personalizado por correo en los próximos minutos.
       </p>
       <Link

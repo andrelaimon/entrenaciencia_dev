@@ -65,11 +65,11 @@ export function calculateCalories(input: CalcInput): CalcResult {
 }
 
 export const activityLabels: Record<ActivityLevel, string> = {
-  1.375: 'Ligera — ejercicio 1–3 veces por semana (15–30 min de frecuencia cardíaca elevada)',
-  1.55: 'Moderada — ejercicio 4–5 veces por semana (15–30 min de frecuencia cardíaca elevada)',
-  1.725: 'Activo — ejercicio intenso 3–4 veces por semana (45–120 min de frecuencia cardíaca elevada)',
-  1.9: 'Muy activo — ejercicio intenso 6–7 veces por semana (45–120 min de frecuencia cardíaca elevada)',
-  2.0: 'Extra activo — ejercicio muy intenso a diario (2+ horas)',
+  1.375: 'Ligera — Ejercicio 1–3 veces por semana (15–30 min de frecuencia cardíaca elevada)',
+  1.55: 'Moderada — Ejercicio 4–5 veces por semana (15–30 min de frecuencia cardíaca elevada)',
+  1.725: 'Activo — Ejercicio intenso 3–4 veces por semana (45–120 min de frecuencia cardíaca elevada)',
+  1.9: 'Muy activo — Ejercicio intenso 6–7 veces por semana (45–120 min de frecuencia cardíaca elevada)',
+  2.0: 'Extra activo — Ejercicio muy intenso a diario (2+ horas)',
 };
 
 export type MacroPreset = 'high_protein' | 'balanced' | 'high_carb';
@@ -83,23 +83,23 @@ export const macroPresets: Record<MacroPreset, { protein: number; carbs: number;
 export const goalLabels: Record<Goal, { title: string; hint: string }> = {
   leve_loss: {
     title: 'Leve pérdida de peso — 0.25 kg/semana',
-    hint: 'A este ritmo, en 3 meses podrías perder ~3 kg de peso, con alta probabilidad de preservar masa muscular si el plan está bien estructurado.',
+    hint: 'Perder aproximadamente 3 kg en 3 meses preservando masa muscular.',
   },
   loss: {
     title: 'Pérdida de peso — 0.5 kg/semana',
-    hint: 'A este ritmo, en 3 meses podrías perder ~6 kg de peso. La preservación de masa muscular dependerá del entrenamiento y la ingesta proteica.',
+    hint: 'Perder aproximadamente 6 kg en 3 meses preservando masa muscular si tu ingesta proteica es óptima.',
   },
   maintain: {
     title: 'Mantenimiento',
-    hint: 'Objetivo orientado a mantener el peso y la composición corporal actual.',
+    hint: 'Objetivo orientado a mantener el peso.',
   },
   leve_gain: {
     title: 'Leve ganancia de masa — 0.25 kg/semana',
-    hint: 'A este ritmo, en 3 meses podrías ganar ~3 kg de peso, con mayor proporción de masa muscular si el superávit es moderado y el entrenamiento es adecuado.',
+    hint: 'Ganar aproximadamente 3 kg en 3 meses ganando principalmente masa muscular.',
   },
   gain: {
     title: 'Ganancia de masa — 0.5 kg/semana',
-    hint: 'A este ritmo, en 3 meses podrías ganar ~6 kg de peso. Parte de la ganancia incluirá masa grasa incluso con un superávit controlado.',
+    hint: 'Ganar aproximadamente 6 kg en 3 meses ganando masa muscular y algo de grasa.',
   },
 };
 
