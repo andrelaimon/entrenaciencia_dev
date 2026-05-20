@@ -128,7 +128,7 @@ export default function EmailModal({ isOpen, onClose, title, kind = 'pdf' }: Ema
         {/* Cyan accent bar */}
         <div style={{ height: 3, background: `linear-gradient(90deg, ${CYAN} 0%, rgba(35,211,255,0.3) 100%)` }} />
 
-        <div className="p-8">
+        <div className="p-5 sm:p-8">
           <button
             onClick={onClose}
             className="absolute top-3 right-4 transition-colors"

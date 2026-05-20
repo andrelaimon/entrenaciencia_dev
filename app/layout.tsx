@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import Script from "next/script";
 import Analytics from "@/components/Analytics";
@@ -13,6 +13,12 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "Entrena con Ciencia — Entrenamiento Inteligente",
   description: "Transforma tu cuerpo con ciencia y eficiencia. Calcula tus calorías, accede a recursos gratuitos y comienza tu transformación hoy.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;

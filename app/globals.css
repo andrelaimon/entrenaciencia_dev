@@ -4,6 +4,14 @@
   --font-poppins: 'Poppins', sans-serif;
 }
 
+/* Responsive show/hide — independent of Tailwind */
+.desktop-only { display: flex !important; }
+.mobile-only { display: none !important; }
+@media (max-width: 900px) {
+  .desktop-only { display: none !important; }
+  .mobile-only { display: flex !important; }
+}
+
 /* ============ DESIGN TOKENS ============ */
 :root {
   --navy:        #010d15;
@@ -114,6 +122,24 @@ nav.nav-scrolled .nav-brand {
 
 nav.nav-scrolled .nav-cta {
   padding: 6px 14px;
+}
+
+/* Mobile dropdown CTA — clean square block at the bottom of the menu */
+.mobile-menu-cta {
+  display: block;
+  margin-top: 20px;
+  padding: 14px 20px;
+  background: #FFC300;
+  color: #010d15;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 4px;
+  white-space: nowrap;
 }
 
 .nav-brand {
@@ -1146,21 +1172,26 @@ footer p {
 @media (max-width: 900px) {
   nav { padding: 14px 20px; }
   nav.nav-scrolled { padding: 6px 20px; }
-  .nav-links { gap: 20px; }
-  .nav-links a { font-size: 12px; }
   .hero { padding: 120px 20px 60px; }
   .hero h1 .hero-eyebrow-line { white-space: normal; font-size: clamp(1.3rem, 5vw, 1.8rem); }
-  .why-grid { grid-template-columns: 1fr; gap: 50px; }
-  .why-visual { min-height: 420px; padding: 0; justify-content: center; }
-  .evidence-paper { width: 240px; padding: 16px 16px 14px; right: auto; left: 10%; top: 50%; transform: translateY(-50%) rotate(-9deg); }
-  .gurus-mockup { max-width: 380px; padding: 24px 20px 60px; }
-  .pillars-row { grid-template-columns: 1fr; gap: 40px; }
-  .pillars-iso-wrap { margin-bottom: 48px; padding: 30px 0; }
-  .pillars-iso-wrap::before { width: 200px; height: 200px; }
-  .pillars-iso-wrap::after { width: 280px; height: 280px; }
-  .pillars-iso { width: 130px; }
-  .resources-grid { grid-template-columns: 1fr; }
-  section { padding: 80px 20px; }
+  .why-grid { grid-template-columns: 1fr; gap: 32px; margin-top: 28px; }
+  .why-visual { min-height: 0; padding: 0; margin-top: 0; justify-content: center; flex-direction: column; align-items: center; gap: 24px; }
+  .evidence-paper { position: relative; top: auto; right: auto; left: auto; width: 100%; max-width: 320px; transform: rotate(-3deg); }
+  .gurus-mockup { max-width: 340px; padding: 24px 20px 56px; }
+
+  /* Pillars — match compact desktop on mobile */
+  .pillars { padding-top: 48px; padding-bottom: 48px; }
+  .pillars-row { grid-template-columns: 1fr; gap: 16px; }
+  .pillars-iso-wrap { margin-bottom: 40px; padding: 20px 0 12px; }
+  .pillars-iso-wrap::before { width: 110px; height: 110px; }
+  .pillars-iso-wrap::after { width: 150px; height: 150px; }
+  .pillars-iso { width: 70px; }
+
+  /* Resources — match compact desktop on mobile */
+  .resources { padding-top: 48px; padding-bottom: 48px; }
+  .resources-grid { grid-template-columns: 1fr; gap: 14px; }
+
+  section { padding: 64px 20px; }
 }
 
 @media (max-width: 600px) {
@@ -1174,12 +1205,19 @@ footer p {
   .hero h1 .hero-eyebrow-line { font-size: clamp(1.1rem, 5.5vw, 1.5rem); margin-bottom: 10px; }
   .hero .subhead { font-size: clamp(0.9rem, 4vw, 1rem); margin-bottom: 32px; }
 
-  /* Buttons — full width, comfortable touch targets */
+  /* Buttons — full width, comfortable touch targets, drop the desktop min-width */
   .hero-ctas { flex-direction: column; align-items: stretch; gap: 12px; padding: 0 8px; }
+  .hero-ctas .btn { min-width: 0; }
   .btn { padding: 15px 24px; font-size: 13px; letter-spacing: 0.8px; text-align: center; }
 
   /* Scroll indicator */
   .scroll-label { font-size: 10px; }
+
+  /* Resource action — bigger tap target */
+  .resource-action { padding: 13px 22px; min-height: 44px; }
+
+  /* Closer section — keep readable on small phones */
+  .closer-support { font-size: 0.95rem; }
 }
 
 /* Scroll reveal */

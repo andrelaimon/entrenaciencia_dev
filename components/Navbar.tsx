@@ -28,8 +28,8 @@ export default function Navbar() {
         <div className="name">Entrena con <span>Ciencia</span></div>
       </a>
 
-      {/* Desktop */}
-      <ul className="nav-links hidden md:flex">
+      {/* Desktop nav */}
+      <ul className="nav-links desktop-only">
         {navLinks.map((link) => (
           <li key={link.label}>
             <a href={link.href}>{link.label}</a>
@@ -44,24 +44,24 @@ export default function Navbar() {
 
       {/* Mobile hamburger */}
       <button
-        className="md:hidden text-white p-2"
+        className="mobile-only text-white p-2"
         onClick={() => setMenuOpen(!menuOpen)}
         aria-label="Toggle menu"
       >
         {menuOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
-      {/* Mobile menu */}
+      {/* Mobile dropdown */}
       {menuOpen && (
         <div
-          className="md:hidden fixed top-[73px] left-0 right-0 px-6 pb-6 flex flex-col gap-4 z-50"
+          className="mobile-only fixed top-[73px] left-0 right-0 px-6 pt-2 pb-6 flex flex-col z-50"
           style={{ background: 'rgba(1, 13, 21, 0.97)', borderTop: '1px solid var(--border-soft)' }}
         >
           {navLinks.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              className="text-white hover:text-white text-base font-medium py-2 border-b border-white/10"
+              className="text-white text-base font-medium py-3 border-b border-white/10"
               onClick={() => setMenuOpen(false)}
             >
               {link.label}
@@ -69,7 +69,7 @@ export default function Navbar() {
           ))}
           <a
             href="/#recursos"
-            className="nav-cta mt-2 text-center"
+            className="mobile-menu-cta"
             onClick={() => setMenuOpen(false)}
           >
             Nuestro curso

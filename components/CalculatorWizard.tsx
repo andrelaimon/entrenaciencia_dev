@@ -321,7 +321,7 @@ const cardStyle = {
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <motion.div {...stepMotion} style={cardStyle} className="p-8 md:p-10">
+    <motion.div {...stepMotion} style={cardStyle} className="p-5 sm:p-8 md:p-10">
       {children}
     </motion.div>
   );
@@ -338,7 +338,7 @@ function PrimaryButton({ children, onClick, disabled, type }: {
       type={type ?? 'button'}
       onClick={onClick}
       disabled={disabled}
-      className="px-8 py-3.5 text-sm font-bold rounded-md inline-flex items-center justify-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed"
+      className="px-5 sm:px-8 py-3.5 text-sm font-bold rounded-md inline-flex items-center justify-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed"
       style={{
         background: '#FFC300',
         color: '#010d15',
@@ -465,15 +465,15 @@ function IntroStep({ onNext }: { onNext: () => void }) {
       <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#23D3FF' }}>
         ¿Cómo funciona?
       </p>
-      <ol className="flex flex-col gap-3 mb-8">
+      <ol className="flex flex-col gap-2 sm:gap-3 mb-8">
         {steps.map((s, i) => (
           <li
             key={i}
-            className="flex gap-3 items-start p-4 rounded-xl"
+            className="flex gap-3 items-start p-3 sm:p-4 rounded-xl"
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
           >
             <div
-              className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-sm font-bold"
+              className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-sm font-bold"
               style={{
                 clipPath: 'polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)',
                 background: '#23D3FF',
