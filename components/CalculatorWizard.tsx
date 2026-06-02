@@ -162,6 +162,12 @@ export default function CalculatorWizard() {
   const startTime = useRef<number>(Date.now());
   const submittedRef = useRef(false);
 
+  // Scroll to top on initial mount and on every top-level step transition,
+  // so each screen starts at the top instead of inheriting the previous Y.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [step, submitted]);
+
   useEffect(() => {
     const handleUnload = () => {
       if (submittedRef.current) return;
@@ -258,6 +264,32 @@ export default function CalculatorWizard() {
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify(payload),
                 }).catch(() => {});
+
+                // Client-testing aid: trigger a PDF download with the user's
+                // computed report so the team can verify numbers without
+                // waiting on the email pipeline.
+                fetch('/api/calculator-report-pdf', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    name:   form.name.trim(),
+                    inputs: { ...calcInput, units: form.units },
+                    result,
+                  }),
+                })
+                  .then(async (res) => {
+                    if (!res.ok) return;
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'reporte-entrenaconciencia.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                  })
+                  .catch(() => {});
 
                 submittedRef.current = true;
                 fireConversionEvent('CompleteRegistration', 'CompleteRegistration', {
@@ -717,6 +749,12 @@ function FormStep({ form, setForm, pregnancyLactation, submitting, submitError, 
   const [subStep, setSubStep] = useState(0);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const touch = (key: string) => setTouched((t) => ({ ...t, [key]: true }));
+
+  // Each form sub-step (Tus medidas → Tu actividad → Tu objetivo → Tus datos)
+  // can render at a different height, so scroll to top on every transition.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [subStep]);
 
   const metric = form.units === 'metric';
 
