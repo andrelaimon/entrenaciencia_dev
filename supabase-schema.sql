@@ -115,10 +115,11 @@ create table calculator_submissions (
   age                      int,
   weight_kg                numeric,
   height_cm                numeric,
-  body_fat_pct             numeric,
+  body_fat_pct             numeric,  -- deprecated: no longer collected (kept for historical rows)
 
   activity_level           numeric,
   goal                     text,
+  macro_split              text,     -- 'balanced' | 'low_fat' | 'low_carb'
 
   -- Results
   bmr                      int,
@@ -128,6 +129,7 @@ create table calculator_submissions (
   protein_g                int,
   carbs_g                  int,
   fat_g                    int,
+  warnings                 text[],   -- e.g. {'deficit_limitado','supervision_medica'}
 
   obstacle                 text,
 
@@ -376,3 +378,10 @@ select
 from traffic t
 left join conversions c on c.source = t.source
 order by t.visitors desc;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Migration v2 — calculator spec v11 (run on existing deployments)
+-- ─────────────────────────────────────────────────────────────────────────────
+alter table calculator_submissions
+  add column if not exists macro_split text,
+  add column if not exists warnings    text[];

@@ -25,6 +25,11 @@
 *.pem
 Feedback Web.pdf
 
+# client spec docs (kept locally, not in repo)
+Backend_Calculadora.pdf
+Backend Calculadora*.pdf
+Backend Final.docx
+
 # debug
 npm-debug.log*
 yarn-debug.log*

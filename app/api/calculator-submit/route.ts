@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { sendCalculatorReport } from '@/lib/email/send';
+
+export const runtime = 'nodejs';
 
 function calorieBracket(cal: number): string {
   if (cal < 1500) return '<1500';
@@ -21,7 +24,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: 'invalid_payload' }, { status: 400 });
   }
 
-  const { inputs, result, obstacle, name, email, flags } = payload;
+  const { inputs, result, obstacle, name, email, flags, warnings } = payload;
 
   const tracking = {
     anonymous_id:             payload.anonymous_id ?? null,
@@ -47,9 +50,9 @@ export async function POST(req: Request) {
       age:                      inputs?.age ?? null,
       weight_kg:                inputs?.weight ?? null,
       height_cm:                inputs?.height ?? null,
-      body_fat_pct:             inputs?.bodyFat ?? null,
       activity_level:           inputs?.activity ?? null,
       goal:                     inputs?.goal ?? null,
+      macro_split:              inputs?.macroSplit ?? null,
       bmr:                      result?.bmr ?? null,
       tdee:                     result?.tdee ?? null,
       calories:                 result?.calories ?? null,
@@ -58,6 +61,7 @@ export async function POST(req: Request) {
       carbs_g:                  result?.carbs ?? null,
       fat_g:                    result?.fat ?? null,
       obstacle:                 obstacle ?? null,
+      warnings:                 Array.isArray(warnings) ? warnings : null,
       flag_medical:             flags?.medical ?? false,
       flag_medications:         flags?.medications ?? false,
       flag_weight_change:       flags?.weightChange ?? false,
@@ -82,6 +86,18 @@ export async function POST(req: Request) {
 
   if (submissionResult.error && leadResult.error) {
     return NextResponse.json({ ok: false, error: 'database_error' }, { status: 500 });
+  }
+
+  // Send the personalized report (HTML email + PDF attachment).
+  // Failures are logged inside sendCalculatorReport; we never fail the response on email errors —
+  // the wizard already shows the success screen optimistically.
+  if (result && inputs) {
+    await sendCalculatorReport({
+      to:    email,
+      name,
+      inputs,
+      result,
+    }).catch((err) => console.error('[calculator-submit] email send threw:', err));
   }
 
   return NextResponse.json({ ok: true });

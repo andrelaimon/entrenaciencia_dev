@@ -7,17 +7,22 @@ import { CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react';
 import { getTrackingContext } from '@/lib/tracking';
 import { fireConversionEvent } from '@/lib/pixel';
 import {
+  ACTIVITY_LEVELS,
   activityLabels,
+  intensityTooltips,
   goalLabels,
+  goalHint,
+  CLINICAL_NOTE_PCT_RANGE,
+  macroSplitLabels,
   lbToKg,
   inToCm,
-  calculateCaloriesKatch,
-  calculateCaloriesWithPreset,
+  calculateCalories,
+  computeBmrTdee,
+  isGoalAvailable,
   type ActivityLevel,
   type Goal,
   type Sex,
-  type CalcInput,
-  type CalcResult,
+  type MacroSplit,
 } from '@/lib/calorieCalculator';
 
 type Step = 'intro' | 'screening' | 'form';
@@ -45,8 +50,8 @@ type FormState = {
   weight: string;
   height: string;
   activity: ActivityLevel | null;
-  bodyFat: string;
   goal: Goal | null;
+  macroSplit: MacroSplit;
   obstacle: Obstacle | '';
   name: string;
   email: string;
@@ -54,8 +59,8 @@ type FormState = {
   obstacleOther: string;
 };
 
-const ACTIVITY_TIERS: ActivityLevel[] = [1.375, 1.55, 1.725, 1.9, 2.0];
 const GOAL_ORDER: Goal[] = ['leve_loss', 'loss', 'maintain', 'leve_gain', 'gain'];
+const MACRO_SPLITS: MacroSplit[] = ['balanced', 'low_fat', 'low_carb'];
 
 const SCREENING_CHECKBOXES: { id: keyof ScreeningFlags; label: string; disclaimer?: string }[] = [
   {
@@ -118,8 +123,8 @@ function initialForm(): FormState {
     weight: '',
     height: '',
     activity: null,
-    bodyFat: '',
     goal: null,
+    macroSplit: 'balanced',
     obstacle: '',
     name: '',
     email: '',
@@ -203,6 +208,7 @@ export default function CalculatorWizard() {
             key="form"
             form={form}
             setForm={setForm}
+            pregnancyLactation={flags.pregnancyLactation}
             submitting={submitting}
             submitError={submitError}
             onBack={() => setStep('screening')}
@@ -213,27 +219,29 @@ export default function CalculatorWizard() {
                 const weightKg = form.units === 'imperial' ? lbToKg(Number(form.weight)) : Number(form.weight);
                 const heightCm = form.units === 'imperial' ? inToCm(Number(form.height)) : Number(form.height);
 
-                const calcInput: CalcInput = {
+                const calcInput = {
                   sex: form.sex,
                   age: Number(form.age),
                   weight: weightKg,
                   height: heightCm,
                   activity: form.activity as ActivityLevel,
                   goal: form.goal as Goal,
+                  macroSplit: form.macroSplit,
+                  pregnancyLactation: flags.pregnancyLactation,
                 };
 
-                let result: CalcResult;
-                const bf = form.bodyFat === '' ? 0 : Number(form.bodyFat);
-                if (bf > 0) {
-                  const lbm = weightKg * (1 - bf / 100);
-                  result = calculateCaloriesKatch(lbm, calcInput.activity, calcInput.goal);
-                } else {
-                  result = calculateCaloriesWithPreset(calcInput);
+                const calc = calculateCalories(calcInput);
+                if ('blocked' in calc) {
+                  setSubmitError('Por seguridad, este objetivo no está disponible durante embarazo o lactancia. Elige mantenimiento o ganancia, o consulta con tu médico.');
+                  setSubmitting(false);
+                  return;
                 }
+                const result = calc;
 
                 const payload = {
-                  inputs: { ...calcInput, bodyFat: bf > 0 ? bf : null, units: form.units, macroPreset: 'balanced' },
+                  inputs: { ...calcInput, units: form.units },
                   result,
+                  warnings: result.warnings,
                   obstacle: form.obstacle,
                   obstacle_other: form.obstacle === 'other' ? form.obstacleOther.trim() || null : null,
                   name: form.name.trim(),
@@ -406,22 +414,26 @@ function PillButton({ active, onClick, children }: {
   );
 }
 
-function RadioCard({ active, onClick, title, hint, accent, hintItalic }: {
+function RadioCard({ active, onClick, title, hint, accent, hintItalic, disabled }: {
   active: boolean;
   onClick: () => void;
   title: string;
-  hint?: string;
+  hint?: React.ReactNode;
   accent: string;
   hintItalic?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="text-left p-4 rounded-xl transition-all"
+      disabled={disabled}
+      aria-disabled={disabled}
+      className="text-left p-4 rounded-xl transition-all disabled:cursor-not-allowed"
       style={{
         background: active ? `${accent}18` : 'rgba(255,255,255,0.04)',
         border: `2px solid ${active ? accent : 'rgba(255,255,255,0.08)'}`,
+        opacity: disabled ? 0.4 : 1,
       }}
     >
       <p className="text-sm font-bold leading-snug" style={{ color: '#ffffff', fontWeight: 700 }}>
@@ -436,6 +448,81 @@ function RadioCard({ active, onClick, title, hint, accent, hintItalic }: {
         </p>
       )}
     </button>
+  );
+}
+
+/* ─────────────────────── Intensity tooltip (§2.2.1) ─────────────────── */
+
+function IntensityInfo({ term }: { term: 'ligero' | 'moderado' | 'intenso' }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span style={{ position: 'relative', display: 'inline-block', marginLeft: 4 }}>
+      <span
+        role="button"
+        tabIndex={0}
+        aria-label={`Definición de ${term}`}
+        onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); setOpen((o) => !o); }
+        }}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        style={{
+          display: 'inline-flex',
+          width: 14, height: 14, borderRadius: 7,
+          background: 'rgba(35,211,255,0.25)',
+          color: '#23D3FF',
+          fontSize: 9, fontStyle: 'normal', fontWeight: 700,
+          alignItems: 'center', justifyContent: 'center',
+          verticalAlign: 'middle', cursor: 'pointer',
+          border: '1px solid rgba(35,211,255,0.45)',
+        }}
+      >
+        i
+      </span>
+      {open && (
+        <span
+          role="tooltip"
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'absolute',
+            bottom: '100%', left: 0, marginBottom: 8,
+            background: '#011a2a',
+            color: '#ffffff',
+            padding: '8px 10px',
+            borderRadius: 6,
+            fontSize: 11, lineHeight: 1.45, fontStyle: 'normal',
+            width: 260, zIndex: 20,
+            boxShadow: '0 6px 18px rgba(0,0,0,0.4)',
+            border: '1px solid rgba(35,211,255,0.25)',
+          }}
+        >
+          {intensityTooltips[term]}
+        </span>
+      )}
+    </span>
+  );
+}
+
+/** v12 §2.2.1 — inject an info icon after the intensity term in the activity hint. */
+function activityHintWithTooltip(tier: ActivityLevel): React.ReactNode {
+  const termMap: Partial<Record<ActivityLevel, 'ligero' | 'moderado' | 'intenso'>> = {
+    1.375: 'ligero',
+    1.55:  'moderado',
+    1.725: 'intenso',
+    1.9:   'intenso',
+  };
+  const hint = activityLabels[tier].hint;
+  const term = termMap[tier];
+  if (!term) return hint;
+  const idx = hint.toLowerCase().indexOf(term);
+  if (idx < 0) return hint;
+  return (
+    <>
+      {hint.slice(0, idx + term.length)}
+      <IntensityInfo term={term} />
+      {hint.slice(idx + term.length)}
+    </>
   );
 }
 
@@ -618,9 +705,10 @@ function WarningBox({ level }: { level: 'yellow' | 'red' | 'pregnancy' }) {
 const FORM_SUB_STEP_TITLES = ['Tus medidas', 'Tu actividad', 'Tu objetivo', 'Tus datos'];
 const FORM_SUB_STEPS = FORM_SUB_STEP_TITLES.length;
 
-function FormStep({ form, setForm, submitting, submitError, onBack, onSubmit }: {
+function FormStep({ form, setForm, pregnancyLactation, submitting, submitError, onBack, onSubmit }: {
   form: FormState;
   setForm: (f: FormState) => void;
+  pregnancyLactation: boolean;
   submitting: boolean;
   submitError: string | null;
   onBack: () => void;
@@ -646,14 +734,33 @@ function FormStep({ form, setForm, submitting, submitError, onBack, onSubmit }: 
   const heightValid = form.height !== '' && heightNum >= heightMin && heightNum <= heightMax;
   const heightTouched = touched.height || false;
 
-  const bfValid = form.bodyFat === '' || (Number(form.bodyFat) >= 5 && Number(form.bodyFat) <= 60);
   const emailValid = EMAIL_REGEX.test(form.email);
   const nameValid = form.name.trim().length > 0;
 
+  // Goal-screen feasibility: pre-compute BMR/TDEE so we can disable loss goals
+  // that would fall below the BMR floor, or all loss goals during pregnancy/lactation.
+  const measuresReady = ageValid && weightValid && heightValid && form.activity !== null;
+  const bmrTdee = measuresReady
+    ? computeBmrTdee({
+        sex:    form.sex,
+        age:    ageNum,
+        weight: metric ? weightNum : lbToKg(weightNum),
+        height: metric ? heightNum : inToCm(heightNum),
+        activity: form.activity as ActivityLevel,
+      })
+    : null;
+
+  const weightKgForGoal = measuresReady ? (metric ? weightNum : lbToKg(weightNum)) : 0;
+
+  const goalAvailable = (g: Goal): boolean =>
+    bmrTdee ? isGoalAvailable(g, bmrTdee.bmr, bmrTdee.tdee, weightKgForGoal) : true;
+
+  const goalIsValid = form.goal !== null && goalAvailable(form.goal);
+
   const subStepValid = [
     ageValid && weightValid && heightValid,
-    form.activity !== null && bfValid,
-    form.goal !== null,
+    form.activity !== null,
+    goalIsValid,
     nameValid && emailValid,
   ];
 
@@ -768,45 +875,63 @@ function FormStep({ form, setForm, submitting, submitError, onBack, onSubmit }: 
           <p className="text-sm italic mb-4 leading-relaxed" style={{ color: '#ffffff' }}>
             Selecciona el nivel que mejor represente tu actividad física habitual.
           </p>
-          <div className="flex flex-col gap-2 mb-8">
-            {ACTIVITY_TIERS.map((tier) => (
+          <div className="flex flex-col gap-2 mb-3">
+            {ACTIVITY_LEVELS.map((tier) => (
               <RadioCard
                 key={tier} accent="#23D3FF"
                 active={form.activity === tier} onClick={() => update('activity', tier)}
-                title={activityLabels[tier].split(' — ')[0]}
-                hint={activityLabels[tier].split(' — ').slice(1).join(' — ')}
+                title={activityLabels[tier].title}
+                hint={activityHintWithTooltip(tier)}
                 hintItalic
               />
             ))}
           </div>
-
-          <SectionLabel>% de grasa corporal (opcional)</SectionLabel>
-          <Field label="">
-            <input
-              type="number" min={5} max={60}
-              value={form.bodyFat} onChange={(e) => update('bodyFat', e.target.value)}
-              className="calc-input" placeholder="18"
-            />
-            <p className="text-xs mt-1" style={{ color: '#ffffff' }}>
-              {form.bodyFat === ''
-                ? 'Si no lo conoces, calcularemos tus resultados con el método Mifflin-St. Jeor.'
-                : !bfValid
-                  ? 'Ingresa un valor entre 5 y 60.'
-                  : 'Usaremos el método Katch-McArdle para una estimación más precisa.'}
-            </p>
-          </Field>
+          <p className="text-xs italic mb-8 leading-relaxed" style={{ color: 'rgba(255,255,255,0.7)' }}>
+            Si dudas entre dos niveles, elige el más bajo.
+          </p>
         </>
       )}
 
       {subStep === 2 && (
         <>
           <SectionLabel>Objetivo</SectionLabel>
+          {pregnancyLactation && (
+            <p className="text-xs mb-3 leading-relaxed" style={{ color: '#FFC300' }}>
+              Marcaste embarazo o lactancia: si eliges un objetivo de pérdida, no podremos entregarte un resultado por seguridad. Te recomendamos elegir mantenimiento o ganancia.
+            </p>
+          )}
+          <div className="flex flex-col gap-2 mt-3">
+            {GOAL_ORDER.map((g) => {
+              const available = goalAvailable(g);
+              const disabledHint = !available
+                ? 'No disponible con tus medidas: caería por debajo de tu metabolismo basal.'
+                : undefined;
+              const liveHint = weightKgForGoal > 0 ? goalHint(g, weightKgForGoal) : '';
+              return (
+                <RadioCard
+                  key={g} accent="#FFC300"
+                  active={form.goal === g}
+                  disabled={!available}
+                  onClick={() => available && update('goal', g)}
+                  title={goalLabels[g].title}
+                  hint={disabledHint ?? liveHint}
+                />
+              );
+            })}
+          </div>
+          <p className="text-xs italic leading-relaxed mb-8 mt-3" style={{ color: 'rgba(255,255,255,0.7)' }}>
+            {CLINICAL_NOTE_PCT_RANGE}
+          </p>
+
+          <SectionLabel>Reparto de macronutrientes</SectionLabel>
           <div className="flex flex-col gap-2 mb-8 mt-3">
-            {GOAL_ORDER.map((g) => (
+            {MACRO_SPLITS.map((m) => (
               <RadioCard
-                key={g} accent="#FFC300"
-                active={form.goal === g} onClick={() => update('goal', g)}
-                title={goalLabels[g].title} hint={goalLabels[g].hint}
+                key={m} accent="#9CE2B6"
+                active={form.macroSplit === m}
+                onClick={() => update('macroSplit', m)}
+                title={macroSplitLabels[m].title}
+                hint={macroSplitLabels[m].hint}
               />
             ))}
           </div>
