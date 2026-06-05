@@ -29,6 +29,11 @@ Feedback Web.pdf
 Backend_Calculadora.pdf
 Backend Calculadora*.pdf
 Backend Final.docx
+Reporte personalizado*.pdf
+
+# upstream zips / shared drops (kept locally, not in repo)
+*.zip
+shared_by_gonzalo/
 
 # debug
 npm-debug.log*

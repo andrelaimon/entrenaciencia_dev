@@ -19,6 +19,13 @@ export const COLORS = {
   warnBar:   '#FFC300',
   dangerBg:  '#ffe5e5',
   dangerBar: '#EF4444',
+  // v15 — descontrol alimentario aviso renders orange.
+  orangeBg:  '#fff1e6',
+  orangeBar: '#F97316',
+  // v14 — soft notices (avisos) render with our brand green as the accent:
+  // light mint fill + mint left bar. The title uses textDark for readability.
+  noteBg:    '#edfaf1',
+  noteBar:   '#9CE2B6',
 } as const;
 
 export const FONT_STACK = 'Poppins, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';

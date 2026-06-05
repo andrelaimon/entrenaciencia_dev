@@ -11,18 +11,37 @@ import {
   activityLabels,
   intensityTooltips,
   goalLabels,
-  goalHint,
+  projectedKgRange,
+  projectsToUnderweight,
+  UNDERWEIGHT_PROJECTION_NOTE,
+  lossGoalRedundant,
+  LOSS_REDUNDANT_HINT,
+  MAINTAIN_HINT,
+  goalProteinNote,
+  PROJECTION_NOTE,
+  PREGNANCY_EXTRA_KCAL_NOTE,
   CLINICAL_NOTE_PCT_RANGE,
+  CLINICAL_NOTE_GAIN,
+  PROTEIN_LEVEL_HINT,
+  PROTEIN_DEFICIT_NOTE,
+  PROTEIN_RENAL_NOTE,
+  LOSS_GOALS,
+  GAIN_GOALS,
   macroSplitLabels,
+  proteinLevelLabels,
+  defaultProteinLevel,
   lbToKg,
   inToCm,
   calculateCalories,
-  computeBmrTdee,
-  isGoalAvailable,
+  BLOCK_MESSAGES,
+  BLOCK_GOAL_HINT,
   type ActivityLevel,
   type Goal,
   type Sex,
   type MacroSplit,
+  type ProteinLevel,
+  type CalcWarning,
+  type CalcBlock,
 } from '@/lib/calorieCalculator';
 
 type Step = 'intro' | 'screening' | 'form';
@@ -52,6 +71,7 @@ type FormState = {
   activity: ActivityLevel | null;
   goal: Goal | null;
   macroSplit: MacroSplit;
+  proteinLevel: ProteinLevel;
   obstacle: Obstacle | '';
   name: string;
   email: string;
@@ -60,12 +80,16 @@ type FormState = {
 };
 
 const GOAL_ORDER: Goal[] = ['leve_loss', 'loss', 'maintain', 'leve_gain', 'gain'];
-const MACRO_SPLITS: MacroSplit[] = ['balanced', 'low_fat', 'low_carb'];
+const MACRO_SPLITS: MacroSplit[] = ['low_fat', 'balanced', 'low_carb'];
+const PROTEIN_LEVELS: ProteinLevel[] = ['high', 'standard'];
+
+/** Selected-state colour for every choice group (spec v13 §8 — verde claro). */
+const SELECT_GREEN = '#9CE2B6';
 
 const SCREENING_CHECKBOXES: { id: keyof ScreeningFlags; label: string; disclaimer?: string }[] = [
   {
     id: 'medical',
-    label: 'Antecedentes de condiciones médicas (tiroides, diabetes, hígado, riñón, etc.) o uso de medicamentos en los últimos 3 meses',
+    label: 'Antecedentes de condiciones médicas (enfermedad tiroidea, hepática, renal, diabetes, etc.)',
   },
   {
     id: 'weightChange',
@@ -100,7 +124,7 @@ const PREGNANCY_MESSAGE =
   'Durante el embarazo y la lactancia los requerimientos energéticos cambian de forma significativa y requieren supervisión profesional. Te recomendamos consultar directamente con tu médico o nutricionista antes de usar estos resultados.';
 
 const DISCLAIMER_COPY =
-  'Entiendo que esta herramienta no reemplaza una consulta médica o nutricional individualizada. Los resultados son orientativos. Deseo continuar.';
+  'Entiendo que mi caso puede requerir supervisión profesional, que esta herramienta no reemplaza una consulta médica o nutricional individualizada y que continúo bajo mi propia responsabilidad.';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -125,6 +149,7 @@ function initialForm(): FormState {
     activity: null,
     goal: null,
     macroSplit: 'balanced',
+    proteinLevel: 'standard',
     obstacle: '',
     name: '',
     email: '',
@@ -145,9 +170,22 @@ function warningLevel(flags: ScreeningFlags): 'none' | 'yellow' | 'red' | 'pregn
   return 'none';
 }
 
+/** v14 — supervision is flagged by any medical-history signal: a medical
+ *  condition, a recent restrictive diet, poor eating control, or unintentional
+ *  weight loss. Drives the screening risk-acceptance checkbox. */
+function needsMedicalSupervision(flags: ScreeningFlags): boolean {
+  return flags.medical || flags.restrictiveDiet || flags.eatingControl || flags.weightChange;
+}
+
+/** v15 — flags that inject the green `supervision_medica` notice in the report.
+ *  Eating control was carved out: it now shows its own orange
+ *  `descontrol_alimentario` aviso instead (never the green/red supervision). */
+function needsReportSupervision(flags: ScreeningFlags): boolean {
+  return flags.medical || flags.restrictiveDiet || flags.weightChange;
+}
+
 function requiresDisclaimer(flags: ScreeningFlags): boolean {
-  const level = warningLevel(flags);
-  return level === 'red' || level === 'pregnancy';
+  return needsMedicalSupervision(flags) || flags.pregnancyLactation;
 }
 
 export default function CalculatorWizard() {
@@ -233,16 +271,29 @@ export default function CalculatorWizard() {
                   activity: form.activity as ActivityLevel,
                   goal: form.goal as Goal,
                   macroSplit: form.macroSplit,
+                  proteinLevel: form.proteinLevel,
                   pregnancyLactation: flags.pregnancyLactation,
                 };
 
                 const calc = calculateCalories(calcInput);
                 if ('blocked' in calc) {
-                  setSubmitError('Por seguridad, este objetivo no está disponible durante embarazo o lactancia. Elige mantenimiento o ganancia, o consulta con tu médico.');
+                  setSubmitError(BLOCK_MESSAGES[calc.warning]);
                   setSubmitting(false);
                   return;
                 }
-                const result = calc;
+
+                // v15 — screening-driven report avisos. A medical condition, a
+                // recent restrictive diet, or unintentional weight loss inject the
+                // green supervision_medica notice; eating control injects its own
+                // orange descontrol_alimentario aviso instead.
+                const extraWarnings: CalcWarning[] = [];
+                if (needsReportSupervision(flags)) extraWarnings.push('supervision_medica');
+                if (flags.eatingControl) extraWarnings.push('descontrol_alimentario');
+                const warningsOut: CalcWarning[] = [
+                  ...calc.warnings,
+                  ...extraWarnings.filter((w) => !calc.warnings.includes(w)),
+                ];
+                const result = { ...calc, warnings: warningsOut };
 
                 const payload = {
                   inputs: { ...calcInput, units: form.units },
@@ -424,21 +475,25 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function PillButton({ active, onClick, children }: {
+function PillButton({ active, onClick, children, disabled }: {
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="px-5 py-2.5 rounded-full text-sm font-bold transition-colors"
+      disabled={disabled}
+      aria-disabled={disabled}
+      className="px-5 py-2.5 rounded-full text-sm font-bold transition-colors disabled:cursor-not-allowed"
       style={{
-        background: active ? '#23D3FF' : 'rgba(255,255,255,0.07)',
+        background: active ? SELECT_GREEN : 'rgba(255,255,255,0.07)',
         color: active ? '#010d15' : 'rgba(255,255,255,0.8)',
-        border: `1px solid ${active ? '#23D3FF' : 'rgba(255,255,255,0.15)'}`,
+        border: `1px solid ${active ? SELECT_GREEN : 'rgba(255,255,255,0.15)'}`,
         fontWeight: 700,
+        opacity: disabled ? 0.4 : 1,
       }}
     >
       {children}
@@ -536,6 +591,59 @@ function IntensityInfo({ term }: { term: 'ligero' | 'moderado' | 'intenso' }) {
   );
 }
 
+/** Generic info bubble carrying arbitrary tooltip text (e.g. the protein
+ *  caveat on goal cards — spec §6). */
+function InfoTooltip({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span style={{ position: 'relative', display: 'inline-block', marginLeft: 4 }}>
+      <span
+        role="button"
+        tabIndex={0}
+        aria-label="Más información"
+        onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); setOpen((o) => !o); }
+        }}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        style={{
+          display: 'inline-flex',
+          width: 14, height: 14, borderRadius: 7,
+          background: 'rgba(35,211,255,0.25)',
+          color: '#23D3FF',
+          fontSize: 9, fontStyle: 'normal', fontWeight: 700,
+          alignItems: 'center', justifyContent: 'center',
+          verticalAlign: 'middle', cursor: 'pointer',
+          border: '1px solid rgba(35,211,255,0.45)',
+        }}
+      >
+        i
+      </span>
+      {open && (
+        <span
+          role="tooltip"
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'absolute',
+            bottom: '100%', left: 0, marginBottom: 8,
+            background: '#011a2a',
+            color: '#ffffff',
+            padding: '8px 10px',
+            borderRadius: 6,
+            fontSize: 11, lineHeight: 1.45, fontStyle: 'normal',
+            width: 240, zIndex: 20,
+            boxShadow: '0 6px 18px rgba(0,0,0,0.4)',
+            border: '1px solid rgba(35,211,255,0.25)',
+          }}
+        >
+          {text}
+        </span>
+      )}
+    </span>
+  );
+}
+
 /** v12 §2.2.1 — inject an info icon after the intensity term in the activity hint. */
 function activityHintWithTooltip(tier: ActivityLevel): React.ReactNode {
   const termMap: Partial<Record<ActivityLevel, 'ligero' | 'moderado' | 'intenso'>> = {
@@ -565,7 +673,7 @@ function IntroStep({ onNext }: { onNext: () => void }) {
     'Responde el screening médico inicial (< 1 min).',
     'Ingresa tus datos antropométricos y tu nivel de actividad física real (30 seg).',
     'Selecciona tu objetivo.',
-    'Te enviamos tu reporte personalizado con tus macros, ejemplos de alimentos y un plan de acción inicial.',
+    'Te enviamos tu reporte personalizado con tus macros y calorías objetivo.',
     'Los resultados sostenibles vienen de cambios graduales.',
   ];
 
@@ -608,9 +716,9 @@ function IntroStep({ onNext }: { onNext: () => void }) {
       </ol>
 
       <p className="text-sm mb-8" style={{ color: '#ffffff' }}>
-        ¿Quieres entender la ciencia detrás?{' '}
+        ¿Quieres entender la ciencia detrás de la pérdida de peso?{' '}
         <Link href="/#recursos" className="font-bold underline" style={{ color: '#23D3FF' }}>
-          Descarga la guía de pérdida de peso
+          Descarga nuestra guía aquí
         </Link>
         .
       </p>
@@ -647,7 +755,7 @@ function ScreeningStep({ flags, setFlags, onBack, onNext }: {
         Antes de comenzar
       </h2>
       <p className="leading-relaxed mb-6" style={{ color: '#ffffff' }}>
-        Antecedentes de condiciones médicas que puedan influir en tu peso o metabolismo. Selecciona las que apliquen; puedes dejarlo en blanco si ninguna aplica.
+        Selecciona las condiciones que apliquen; puedes dejarlo en blanco si ninguna aplica.
       </p>
 
       <div className="flex flex-col gap-3 mb-6">
@@ -687,7 +795,7 @@ function ScreeningStep({ flags, setFlags, onBack, onNext }: {
       {needsDisclaimer && (
         <label
           className="flex items-start gap-3 p-4 rounded-xl cursor-pointer mt-4"
-          style={{ background: 'rgba(255,195,0,0.08)', border: '1px solid rgba(255,195,0,0.35)' }}
+          style={{ background: 'rgba(255,195,0,0.1)', border: '1px solid #FFC300' }}
         >
           <input
             type="checkbox"
@@ -715,7 +823,7 @@ function WarningBox({ level }: { level: 'yellow' | 'red' | 'pregnancy' }) {
   const palettes = {
     yellow: { bg: 'rgba(255,195,0,0.1)', bar: '#FFC300', text: 'rgba(255,195,0,0.9)' },
     red: { bg: 'rgba(239,68,68,0.1)', bar: '#EF4444', text: 'rgba(239,100,100,0.95)' },
-    pregnancy: { bg: 'rgba(249,115,22,0.1)', bar: '#F97316', text: 'rgba(249,150,80,0.95)' },
+    pregnancy: { bg: 'rgba(239,68,68,0.1)', bar: '#EF4444', text: 'rgba(239,100,100,0.95)' },
   } as const;
   const p = palettes[level];
   const message = level === 'pregnancy' ? PREGNANCY_MESSAGE : WARNING_MESSAGE;
@@ -734,7 +842,7 @@ function WarningBox({ level }: { level: 'yellow' | 'red' | 'pregnancy' }) {
 
 /* ──────────────────────────────── Form ──────────────────────────────── */
 
-const FORM_SUB_STEP_TITLES = ['Tus medidas', 'Tu actividad', 'Tu objetivo', 'Tus datos'];
+const FORM_SUB_STEP_TITLES = ['Tus medidas', 'Tu actividad', 'Tu objetivo', 'Tu dieta', 'Tus datos'];
 const FORM_SUB_STEPS = FORM_SUB_STEP_TITLES.length;
 
 function FormStep({ form, setForm, pregnancyLactation, submitting, submitError, onBack, onSubmit }: {
@@ -756,50 +864,133 @@ function FormStep({ form, setForm, pregnancyLactation, submitting, submitError, 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [subStep]);
 
+  // Spec §3 — pregnancy/lactation fixes biological sex to female.
+  useEffect(() => {
+    if (pregnancyLactation && form.sex !== 'female') {
+      setForm({ ...form, sex: 'female' });
+    }
+  }, [pregnancyLactation, form, setForm]);
+
   const metric = form.units === 'metric';
 
   const ageNum = form.age === '' ? NaN : Number(form.age);
-  const ageValid = !Number.isNaN(ageNum) && ageNum >= 5 && ageNum <= 120;
+  const ageValid = Number.isInteger(ageNum) && ageNum >= 18 && ageNum <= 80;
   const ageTouched = form.age !== '';
 
   const weightNum = Number(form.weight);
-  const [weightMin, weightMax] = metric ? [20, 400] : [44, 880];
+  const [weightMin, weightMax] = metric ? [30, 300] : [66, 661];
   const weightValid = form.weight !== '' && weightNum >= weightMin && weightNum <= weightMax;
   const weightTouched = touched.weight || false;
 
   const heightNum = Number(form.height);
-  const [heightMin, heightMax] = metric ? [100, 250] : [39, 98];
+  const [heightMin, heightMax] = metric ? [120, 230] : [47, 91];
   const heightValid = form.height !== '' && heightNum >= heightMin && heightNum <= heightMax;
   const heightTouched = touched.height || false;
 
   const emailValid = EMAIL_REGEX.test(form.email);
   const nameValid = form.name.trim().length > 0;
 
-  // Goal-screen feasibility: pre-compute BMR/TDEE so we can disable loss goals
-  // that would fall below the BMR floor, or all loss goals during pregnancy/lactation.
+  // Goal-screen live feasibility (spec v13): once measures are entered we run the
+  // real calculator for each goal/protein/macro combo and disable any option that
+  // would break a normality rule (below BMR, below the sex safety floor, negative
+  // carbs, carbs too low/too high). Only feasible options stay clickable.
   const measuresReady = ageValid && weightValid && heightValid && form.activity !== null;
-  const bmrTdee = measuresReady
-    ? computeBmrTdee({
-        sex:    form.sex,
-        age:    ageNum,
-        weight: metric ? weightNum : lbToKg(weightNum),
-        height: metric ? heightNum : inToCm(heightNum),
-        activity: form.activity as ActivityLevel,
-      })
-    : null;
 
   const weightKgForGoal = measuresReady ? (metric ? weightNum : lbToKg(weightNum)) : 0;
 
-  const goalAvailable = (g: Goal): boolean =>
-    bmrTdee ? isGoalAvailable(g, bmrTdee.bmr, bmrTdee.tdee, weightKgForGoal) : true;
+  // Full profile for the dynamic weight projection (spec §3b) — recomputed on
+  // every render, so it tracks any change to sex/age/weight/height/activity.
+  const goalProfile = measuresReady
+    ? {
+        sex:    form.sex,
+        age:    ageNum,
+        weight: weightKgForGoal,
+        height: metric ? heightNum : inToCm(heightNum),
+        activity: form.activity as ActivityLevel,
+      }
+    : null;
 
-  const goalIsValid = form.goal !== null && goalAvailable(form.goal);
+  // The outcome of a concrete goal + protein + macro combo. v14: hard blocks
+  // disable the option; soft notices (supervision_medica, carbo_*) never
+  // disable anything — they only surface in the report.
+  const comboOutcome = (g: Goal, lvl: ProteinLevel, split: MacroSplit): { block: CalcBlock | null; warnings: CalcWarning[] } => {
+    if (!goalProfile) return { block: null, warnings: [] };
+    const res = calculateCalories({
+      ...goalProfile,
+      goal: g,
+      proteinLevel: lvl,
+      macroSplit: split,
+      pregnancyLactation,
+    });
+    return 'blocked' in res ? { block: res.warning, warnings: [] } : { block: null, warnings: res.warnings };
+  };
+
+  // Macro/protein options no longer gate on soft notices (v14): a combo is
+  // feasible unless it is hard-blocked (which only happens at goal level).
+  const macroSplitFeasible = (g: Goal, lvl: ProteinLevel, split: MacroSplit) =>
+    comboOutcome(g, lvl, split).block === null;
+
+  const proteinLevelFeasible = (g: Goal, lvl: ProteinLevel) =>
+    MACRO_SPLITS.some((s) => macroSplitFeasible(g, lvl, s));
+
+  const firstFeasibleSplit = (g: Goal, lvl: ProteinLevel): MacroSplit =>
+    (['balanced', 'low_fat', 'low_carb'] as MacroSplit[]).find((s) =>
+      macroSplitFeasible(g, lvl, s),
+    ) ?? 'balanced';
+
+  // The block reason for a goal (null = available). `maintain` is always offered.
+  const goalBlock = (g: Goal): CalcBlock | null => {
+    if (g === 'maintain') return null;
+    if (pregnancyLactation && LOSS_GOALS.includes(g)) return 'bloqueo_embarazo';
+    if (!goalProfile) return null;
+    return comboOutcome(g, defaultProteinLevel(g), 'balanced').block;
+  };
+
+  // v13 — the aggressive loss rate is disabled when it collapses to the same
+  // served calories (and thus the same 3-month loss) as the conservative rate.
+  const goalRedundant = (g: Goal): boolean =>
+    goalProfile ? lossGoalRedundant(goalProfile, g) : false;
+
+  const goalAvailable = (g: Goal): boolean =>
+    goalBlock(g) === null && !goalRedundant(g);
+
+  const goalIsValid =
+    form.goal !== null &&
+    goalAvailable(form.goal) &&
+    macroSplitFeasible(form.goal, form.proteinLevel, form.macroSplit);
+
+  // Auto-correct the macro selection when the measures change so the user is never
+  // left on a now-infeasible protein/macro combo. We only move to a feasible option;
+  // if a feasible alternative exists we switch to it (never the other way around),
+  // so this converges and can't loop.
+  useEffect(() => {
+    if (!goalProfile || form.goal === null || !goalAvailable(form.goal)) return;
+    const g = form.goal;
+    let lvl = form.proteinLevel;
+    let split = form.macroSplit;
+    if (!proteinLevelFeasible(g, lvl)) {
+      const fallbackLvl = (['high', 'standard'] as ProteinLevel[]).find((p) =>
+        proteinLevelFeasible(g, p),
+      );
+      if (fallbackLvl) lvl = fallbackLvl;
+    }
+    if (!macroSplitFeasible(g, lvl, split)) split = firstFeasibleSplit(g, lvl);
+    if (lvl !== form.proteinLevel || split !== form.macroSplit) {
+      setForm({ ...form, proteinLevel: lvl, macroSplit: split });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [goalProfile?.sex, goalProfile?.age, goalProfile?.weight, goalProfile?.height, goalProfile?.activity, form.goal, form.proteinLevel, form.macroSplit, pregnancyLactation]);
+
+  // Spec v13 §8 — "¿Cuál es tu mayor obstáculo?" is obligatory to advance.
+  const obstacleValid =
+    form.obstacle !== '' && (form.obstacle !== 'other' || form.obstacleOther.trim().length > 0);
 
   const subStepValid = [
     ageValid && weightValid && heightValid,
     form.activity !== null,
     goalIsValid,
-    nameValid && emailValid,
+    goalIsValid,
+    obstacleValid && nameValid && emailValid,
   ];
 
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) =>
@@ -834,37 +1025,42 @@ function FormStep({ form, setForm, pregnancyLactation, submitting, submitError, 
       {subStep === 0 && (
         <>
           <SectionLabel>Sistema de unidades</SectionLabel>
-          <div className="flex gap-2 mb-1">
+          <div className="flex gap-2 mb-8">
             {(['metric', 'imperial'] as const).map((u) => (
               <PillButton key={u} active={form.units === u} onClick={() => setForm({ ...form, units: u, weight: '', height: '' })}>
                 {u === 'metric' ? 'Métrico (kg/cm)' : 'Imperial (lb/in)'}
               </PillButton>
             ))}
           </div>
-          <p className="text-xs mb-8" style={{ color: '#ffffff' }}>
-            Cambiar unidades reinicia peso y talla.
-          </p>
 
           <SectionLabel>Datos personales</SectionLabel>
           <div className="grid md:grid-cols-2 gap-4 mb-4">
             <Field label="Edad">
               <input
-                type="number" min={5} max={120}
+                type="number" min={18} max={80} step={1}
                 value={form.age} onChange={(e) => update('age', e.target.value)}
                 className="calc-input" placeholder="30"
               />
               {ageTouched && !ageValid && (
-                <p className="text-xs mt-1" style={{ color: '#EF4444' }}>Ingresa una edad válida.</p>
+                <p className="text-xs mt-1" style={{ color: '#EF4444' }}>Ingresa una edad entre 18 y 80 años.</p>
               )}
             </Field>
 
-            <Field label="Sexo biológico">
+            <Field label="Sexo">
               <div className="flex gap-2">
-                {(['male', 'female'] as const).map((s) => (
-                  <PillButton key={s} active={form.sex === s} onClick={() => update('sex', s)}>
-                    {s === 'male' ? 'Masculino' : 'Femenino'}
-                  </PillButton>
-                ))}
+                {(['male', 'female'] as const).map((s) => {
+                  const disabled = pregnancyLactation && s === 'male';
+                  return (
+                    <PillButton
+                      key={s}
+                      active={form.sex === s}
+                      disabled={disabled}
+                      onClick={() => !disabled && update('sex', s)}
+                    >
+                      {s === 'male' ? 'Masculino' : 'Femenino'}
+                    </PillButton>
+                  );
+                })}
               </div>
             </Field>
 
@@ -916,7 +1112,7 @@ function FormStep({ form, setForm, pregnancyLactation, submitting, submitError, 
           <div className="flex flex-col gap-2 mb-3">
             {ACTIVITY_LEVELS.map((tier) => (
               <RadioCard
-                key={tier} accent="#23D3FF"
+                key={tier} accent={SELECT_GREEN}
                 active={form.activity === tier} onClick={() => update('activity', tier)}
                 title={activityLabels[tier].title}
                 hint={activityHintWithTooltip(tier)}
@@ -924,7 +1120,7 @@ function FormStep({ form, setForm, pregnancyLactation, submitting, submitError, 
               />
             ))}
           </div>
-          <p className="text-xs italic mb-8 leading-relaxed" style={{ color: 'rgba(255,255,255,0.7)' }}>
+          <p className="text-xs italic mb-8 leading-relaxed" style={{ color: '#ffffff' }}>
             Si dudas entre dos niveles, elige el más bajo.
           </p>
         </>
@@ -935,37 +1131,182 @@ function FormStep({ form, setForm, pregnancyLactation, submitting, submitError, 
           <SectionLabel>Objetivo</SectionLabel>
           {pregnancyLactation && (
             <p className="text-xs mb-3 leading-relaxed" style={{ color: '#FFC300' }}>
-              Marcaste embarazo o lactancia: si eliges un objetivo de pérdida, no podremos entregarte un resultado por seguridad. Te recomendamos elegir mantenimiento o ganancia.
+              Marcaste embarazo o lactancia: los objetivos de pérdida no están disponibles por seguridad. Elige mantenimiento o ganancia.
             </p>
           )}
           <div className="flex flex-col gap-2 mt-3">
             {GOAL_ORDER.map((g) => {
-              const available = goalAvailable(g);
-              const disabledHint = !available
-                ? 'No disponible con tus medidas: caería por debajo de tu metabolismo basal.'
-                : undefined;
-              const liveHint = weightKgForGoal > 0 ? goalHint(g, weightKgForGoal) : '';
+              const block = goalBlock(g);
+              const redundant = goalRedundant(g);
+              const available = block === null && !redundant;
+              const isLoss = LOSS_GOALS.includes(g);
+              const disabledHint = block
+                ? BLOCK_GOAL_HINT[block]
+                : redundant
+                  ? LOSS_REDUNDANT_HINT
+                  : undefined;
+              const range = goalProfile && g !== 'maintain' ? projectedKgRange(goalProfile, g) : null;
+              const liveHint: React.ReactNode = !goalProfile
+                ? ''
+                : g === 'maintain'
+                  ? MAINTAIN_HINT
+                  : range && (
+                      <>
+                        {isLoss ? 'Pierde' : 'Gana'} aproximadamente{' '}
+                        <span className="font-extrabold text-sm" style={{ color: '#FFC300' }}>
+                          {range.text}
+                        </span>{' '}
+                        en 3 meses
+                      </>
+                    );
+              const note = goalProteinNote(g);
+              const hint = !available
+                ? disabledHint
+                : (
+                    <>
+                      {liveHint}
+                      {note && <InfoTooltip text={note} />}
+                    </>
+                  );
               return (
                 <RadioCard
-                  key={g} accent="#FFC300"
+                  key={g} accent={SELECT_GREEN}
                   active={form.goal === g}
                   disabled={!available}
-                  onClick={() => available && update('goal', g)}
+                  onClick={() =>
+                    available &&
+                    setForm({
+                      ...form,
+                      goal: g,
+                      // Spec v13 §6 defaults: Pérdida → Alto, resto → Estándar; reparto Balanceado.
+                      proteinLevel: defaultProteinLevel(g),
+                      macroSplit: 'balanced',
+                    })
+                  }
                   title={goalLabels[g].title}
-                  hint={disabledHint ?? liveHint}
+                  hint={hint}
                 />
               );
             })}
           </div>
-          <p className="text-xs italic leading-relaxed mb-8 mt-3" style={{ color: 'rgba(255,255,255,0.7)' }}>
-            {CLINICAL_NOTE_PCT_RANGE}
+
+          <p className="text-xs italic leading-relaxed mt-3" style={{ color: '#ffffff' }}>
+            {PROJECTION_NOTE}
           </p>
 
-          <SectionLabel>Reparto de macronutrientes</SectionLabel>
+          {pregnancyLactation && (
+            <p className="text-xs leading-relaxed mt-3" style={{ color: '#FFC300' }}>
+              {PREGNANCY_EXTRA_KCAL_NOTE}
+            </p>
+          )}
+
+          {form.goal !== null && LOSS_GOALS.includes(form.goal) ? (
+            <>
+              <div
+                className="p-4 rounded-xl flex gap-3 items-start mt-3"
+                style={{ background: 'rgba(156,226,182,0.1)', borderLeft: `4px solid ${SELECT_GREEN}` }}
+              >
+                <AlertTriangle size={20} color={SELECT_GREEN} className="flex-shrink-0 mt-0.5" />
+                <p className="text-sm leading-relaxed" style={{ color: SELECT_GREEN }}>
+                  {CLINICAL_NOTE_PCT_RANGE}
+                </p>
+              </div>
+              {/* v15 — orange trajectory aviso: normal-weight now, but this rate
+                  would dip below BMI 18.5 within 3 months. Not a block; the
+                  IMC<18.5 hard gate re-checks on every input change. */}
+              {goalProfile && projectsToUnderweight(goalProfile, form.goal) ? (
+                <div
+                  className="p-4 rounded-xl flex gap-3 items-start mb-8 mt-3"
+                  style={{ background: 'rgba(249,115,22,0.1)', borderLeft: '4px solid #F97316' }}
+                >
+                  <AlertTriangle size={20} color="#F97316" className="flex-shrink-0 mt-0.5" />
+                  <p className="text-sm leading-relaxed" style={{ color: '#F97316' }}>
+                    {UNDERWEIGHT_PROJECTION_NOTE}
+                  </p>
+                </div>
+              ) : (
+                <div className="mb-8" />
+              )}
+            </>
+          ) : form.goal !== null && GAIN_GOALS.includes(form.goal) ? (
+            <div
+              className="p-4 rounded-xl flex gap-3 items-start mb-8 mt-3"
+              style={{ background: 'rgba(156,226,182,0.1)', borderLeft: `4px solid ${SELECT_GREEN}` }}
+            >
+              <AlertTriangle size={20} color={SELECT_GREEN} className="flex-shrink-0 mt-0.5" />
+              <p className="text-sm leading-relaxed" style={{ color: SELECT_GREEN }}>
+                {CLINICAL_NOTE_GAIN}
+              </p>
+            </div>
+          ) : (
+            <div className="mb-8" />
+          )}
+        </>
+      )}
+
+      {subStep === 3 && (
+        <>
+          <SectionLabel>
+            Proteína
+            {form.goal !== null && LOSS_GOALS.includes(form.goal) && (
+              <span className="normal-case">
+                <InfoTooltip text={PROTEIN_DEFICIT_NOTE} />
+              </span>
+            )}
+          </SectionLabel>
+          <div className="flex flex-wrap gap-2 mt-3">
+            {PROTEIN_LEVELS.map((p) => {
+              const pFeasible = form.goal === null || proteinLevelFeasible(form.goal, p);
+              // In a deficit we lock protein to "Alto" to protect muscle mass:
+              // disable "Estándar" by default (unless "Alto" isn't feasible).
+              const lockedByDeficit =
+                form.goal !== null &&
+                LOSS_GOALS.includes(form.goal) &&
+                p === 'standard' &&
+                proteinLevelFeasible(form.goal, 'high');
+              return (
+                <PillButton
+                  key={p}
+                  active={form.proteinLevel === p}
+                  disabled={!pFeasible || lockedByDeficit}
+                  onClick={() => {
+                    if (form.goal !== null) {
+                      setForm({ ...form, proteinLevel: p, macroSplit: firstFeasibleSplit(form.goal, p) });
+                    } else {
+                      update('proteinLevel', p);
+                    }
+                  }}
+                >
+                  {proteinLevelLabels[p].title}
+                </PillButton>
+              );
+            })}
+          </div>
+          {form.goal !== null && !proteinLevelFeasible(form.goal, 'high') && (
+            <p className="text-xs leading-relaxed mt-2" style={{ color: 'rgba(255,255,255,0.7)' }}>
+              El nivel Alto no es compatible con tus calorías para este objetivo; usa Estándar.
+            </p>
+          )}
+          <p className="text-xs leading-relaxed mt-2 mb-3" style={{ color: '#ffffff' }}>
+            {PROTEIN_LEVEL_HINT}
+          </p>
+          <div
+            className="p-4 rounded-xl flex gap-3 items-start mb-8"
+            style={{ background: 'rgba(156,226,182,0.1)', borderLeft: `4px solid ${SELECT_GREEN}` }}
+          >
+            <AlertTriangle size={20} color={SELECT_GREEN} className="flex-shrink-0 mt-0.5" />
+            <p className="text-sm leading-relaxed" style={{ color: SELECT_GREEN }}>
+              {PROTEIN_RENAL_NOTE}
+            </p>
+          </div>
+
+          <SectionLabel>Grasas y carbohidratos</SectionLabel>
           <div className="flex flex-col gap-2 mb-8 mt-3">
             {MACRO_SPLITS.map((m) => (
+              // v14: macro splits never disable — any carb imbalance surfaces as a
+              // soft notice in the report, not as a blocked option.
               <RadioCard
-                key={m} accent="#9CE2B6"
+                key={m} accent={SELECT_GREEN}
                 active={form.macroSplit === m}
                 onClick={() => update('macroSplit', m)}
                 title={macroSplitLabels[m].title}
@@ -974,11 +1315,16 @@ function FormStep({ form, setForm, pregnancyLactation, submitting, submitError, 
             ))}
           </div>
 
-          <SectionLabel>¿Cuál es tu mayor obstáculo? (opcional)</SectionLabel>
+        </>
+      )}
+
+      {subStep === 4 && (
+        <>
+          <SectionLabel>¿Cuál es tu mayor obstáculo?</SectionLabel>
           <div className="flex flex-col gap-2 mt-3">
             {OBSTACLES.map((o) => (
               <RadioCard
-                key={o.id} accent="#9CE2B6"
+                key={o.id} accent={SELECT_GREEN}
                 active={form.obstacle === o.id} onClick={() => update('obstacle', o.id)}
                 title={o.label}
               />
@@ -993,11 +1339,7 @@ function FormStep({ form, setForm, pregnancyLactation, submitting, submitError, 
               placeholder="Cuéntanos cuál es tu mayor obstáculo"
             />
           )}
-        </>
-      )}
 
-      {subStep === 3 && (
-        <>
           <SectionLabel>Datos de contacto</SectionLabel>
           <div className="flex flex-col gap-4 mb-8 mt-3">
             <Field label="Nombre">
@@ -1026,9 +1368,14 @@ function FormStep({ form, setForm, pregnancyLactation, submitting, submitError, 
             </div>
           )}
 
-          <p className="text-xs leading-relaxed mb-6" style={{ color: '#ffffff' }}>
-            Estimaciones derivadas de ecuaciones predictivas y modelos poblacionales. No constituyen diagnóstico ni reemplazan la valoración clínica individual.
-          </p>
+          <div
+            className="p-4 rounded-xl mb-6"
+            style={{ background: 'rgba(156,226,182,0.1)', borderLeft: `4px solid ${SELECT_GREEN}` }}
+          >
+            <p className="text-xs italic leading-relaxed" style={{ color: SELECT_GREEN }}>
+              Estimaciones derivadas de ecuaciones predictivas y modelos poblacionales. No constituyen diagnóstico ni reemplazan la valoración clínica individual.
+            </p>
+          </div>
         </>
       )}
 

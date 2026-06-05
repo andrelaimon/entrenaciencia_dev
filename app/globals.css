@@ -1118,8 +1118,9 @@ footer p {
 }
 .calc-input::placeholder { color: rgba(255,255,255,0.3); }
 .calc-input:focus {
-  border-color: #23D3FF;
-  background: rgba(35,211,255,0.06);
+  border-color: #9CE2B6;
+  background: rgba(156,226,182,0.08);
+  box-shadow: 0 0 0 2px rgba(156,226,182,0.35);
 }
 
 .glass-card {
