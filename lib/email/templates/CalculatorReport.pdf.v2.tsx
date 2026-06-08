@@ -51,7 +51,10 @@ try {
 }
 
 const PAGE_WIDTH = 595;
-const HERO_HEIGHT = 150;
+const HERO_HEIGHT = 170;        // navy band inside the card (measured from designer)
+const CARD_RADIUS = 14;
+const PAGE_BG = '#fbfaf3';      // cream page background behind the card
+const CARD_BORDER = '#d8dfe6';
 
 /* ─────────────────────────── helpers ─────────────────────────── */
 
@@ -164,10 +167,22 @@ function HexTile({ icon, size = 56 }: { icon: 'tdee' | 'adjust' | 'cap'; size?: 
 const s = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
-    backgroundColor: '#eef2f6',
+    backgroundColor: PAGE_BG,
   },
 
-  /* Hero */
+  /* One big rounded card that wraps everything (hero + body). */
+  card: {
+    marginHorizontal: 22,
+    marginTop: 18,
+    marginBottom: 6,
+    borderRadius: CARD_RADIUS,
+    borderWidth: 0.6,
+    borderColor: CARD_BORDER,
+    backgroundColor: COLORS.white,
+    overflow: 'hidden',
+  },
+
+  /* Hero band — sits at the top of the card; corners come from the card overflow:hidden. */
   hero: {
     backgroundColor: COLORS.navy,
     height: HERO_HEIGHT,
@@ -181,49 +196,42 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 40,
     paddingTop: 14,
-    paddingBottom: 12,
+    paddingBottom: 14,
   },
-  isotipo: { width: 52, height: 52, marginBottom: 6 },
+  isotipo: { width: 60, height: 60, marginBottom: 6 },
   brandTitle: {
     color: COLORS.cyan,
-    fontSize: 20,
+    fontSize: 24,
     fontFamily: 'Helvetica-Bold',
     letterSpacing: -0.3,
     textAlign: 'center',
   },
   reportTitle: {
     color: COLORS.yellow,
-    fontSize: 18,
+    fontSize: 22,
     fontFamily: 'Helvetica-Bold',
     letterSpacing: -0.3,
     textAlign: 'center',
-    marginTop: 2,
+    marginTop: 3,
   },
   heroDate: {
     color: COLORS.cyanSoft,
-    fontSize: 9,
-    marginTop: 4,
+    fontSize: 10,
+    marginTop: 6,
     opacity: 0.85,
     textAlign: 'center',
   },
 
-  /* Body — single rounded card */
+  /* Body area — white inside the card, below the hero. */
   body: {
-    marginHorizontal: 18,
-    marginTop: -8,
-    marginBottom: 10,
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    borderWidth: 0.6,
-    borderColor: '#dde4eb',
     paddingHorizontal: 22,
-    paddingTop: 16,
-    paddingBottom: 16,
+    paddingTop: 14,
+    paddingBottom: 14,
   },
 
   greeting: {
-    color: COLORS.navy,
-    fontSize: 12,
+    color: COLORS.yellow,
+    fontSize: 13,
     fontFamily: 'Helvetica-Bold',
     marginBottom: 7,
   },
@@ -278,8 +286,8 @@ const s = StyleSheet.create({
   macroName: { fontSize: 10, color: COLORS.navy, fontFamily: 'Helvetica-Bold' },
   macroRange: { fontSize: 7.5, color: COLORS.textMuted, marginTop: 1 },
   macroGrams: {
-    fontSize: 11,
-    color: COLORS.navy,
+    fontSize: 12,
+    color: COLORS.yellow,
     fontFamily: 'Helvetica-Bold',
     marginRight: 14,
   },
@@ -437,6 +445,10 @@ function CalculatorReportV2({ name, inputs, result }: ReportProps) {
   return (
     <Document title="Reporte personalizado — Entrena con Ciencia" author="Entrena con Ciencia">
       <Page size="A4" style={s.page}>
+        {/* One rounded card wraps the hero + body (overflow:hidden gives the
+            navy hero its rounded top corners and the white body its rounded
+            bottom corners in a single shape). */}
+        <View style={s.card}>
         {/* Hero band */}
         <View style={s.hero}>
           <Svg style={s.heroBg} width={PAGE_WIDTH} height={HERO_HEIGHT}>
@@ -578,8 +590,9 @@ function CalculatorReportV2({ name, inputs, result }: ReportProps) {
             </View>
           </View>
         </View>
+        </View>{/* /card */}
 
-        {/* Footer */}
+        {/* Footer (outside the card, on the cream page bg) */}
         <Text style={s.footer}>
           No constituye diagnóstico ni reemplaza la valoración clínica individual. Si tienes condiciones médicas o tomas medicamentos, consulta con un profesional.
         </Text>
