@@ -3,6 +3,7 @@ import { render } from '@react-email/render';
 import CalculatorReportEmail from '@/lib/email/templates/CalculatorReport.email';
 import { renderCalculatorReportPdf } from '@/lib/email/templates/CalculatorReport.pdf';
 import { renderCalculatorReportPdfV2 } from '@/lib/email/templates/CalculatorReport.pdf.v2';
+import { renderCalculatorReportPdfMaster } from '@/lib/email/templates/CalculatorReport.pdf.master';
 import { calculateCalories, type CalcWarning } from '@/lib/calorieCalculator';
 import type { ReportProps, ReportInputs } from '@/lib/email/templates/sections';
 
@@ -59,7 +60,10 @@ export async function GET(req: Request) {
 
   if (format === 'pdf') {
     const version = url.searchParams.get('version') ?? 'v1';
-    const renderPdf = version === 'v2' ? renderCalculatorReportPdfV2 : renderCalculatorReportPdf;
+    const renderPdf =
+      version === 'master' ? renderCalculatorReportPdfMaster :
+      version === 'v2'     ? renderCalculatorReportPdfV2 :
+                             renderCalculatorReportPdf;
     const pdf = await renderPdf(props);
     return new Response(new Uint8Array(pdf), {
       headers: {
