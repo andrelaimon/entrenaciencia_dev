@@ -498,7 +498,7 @@ function CalculatorReportDocument({ name, inputs, result }: ReportProps) {
             No constituye diagnóstico ni reemplaza la valoración clínica individual.
             Si tienes condiciones médicas o tomas medicamentos, consulta con un profesional.
           </Text>
-          <Text style={s.footerBrand}>Entrena con Ciencia · entrenaconciencia.com</Text>
+          <Text style={s.footerBrand}>Entrena con Ciencia · entrenaciencia.com</Text>
         </View>
       </Page>
     </Document>

@@ -30,7 +30,7 @@ export const COLORS = {
 
 export const FONT_STACK = 'Poppins, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://entrenaconciencia.com';
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.entrenaciencia.com';
 
 // Course-waitlist CTA target — same anchor the landing "Inscribirme" card scrolls to.
 export const COURSE_CTA_URL = `${SITE_URL}/#recursos`;

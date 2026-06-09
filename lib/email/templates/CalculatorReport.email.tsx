@@ -323,7 +323,7 @@ export default function CalculatorReportEmail({ name, inputs, result, baseUrl }:
               No constituye diagnóstico ni reemplaza la valoración clínica individual.
               Si tienes condiciones médicas o tomas medicamentos, consulta con un profesional antes de aplicar este plan.
             </Text>
-            <Text style={footerBrand}>Entrena con Ciencia · entrenaconciencia.com</Text>
+            <Text style={footerBrand}>Entrena con Ciencia · entrenaciencia.com</Text>
           </Section>
         </Container>
       </Body>

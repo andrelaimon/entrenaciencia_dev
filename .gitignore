@@ -31,6 +31,10 @@ Backend Calculadora*.pdf
 Backend Final.docx
 Reporte personalizado*.pdf
 
+# PDF guides — large binaries, deployed separately
+guias_pdfs/
+lib/email/assets/
+
 # upstream zips / shared drops (kept locally, not in repo)
 *.zip
 shared_by_gonzalo/

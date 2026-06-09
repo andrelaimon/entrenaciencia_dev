@@ -29,13 +29,13 @@ const COPY: Record<ModalKind, {
   pdf: {
     heading: (
       <>
-        Te enviaremos el PDF a tu{' '}
-        <span style={{ color: CYAN }}>email</span>
+        Descarga tu guía{' '}
+        <span style={{ color: CYAN }}>gratis</span>
       </>
     ),
-    ctaLabel: 'Solicitar PDF',
-    successHeading: '¡Solicitud recibida!',
-    successBody: 'Te enviaremos el PDF a tu email muy pronto. ¡Gracias por unirte a la comunidad!',
+    ctaLabel: 'Descargar ahora',
+    successHeading: '¡Descargando!',
+    successBody: '¡Gracias por unirte a la comunidad! Si la descarga no inicia automáticamente, revisa tu carpeta de descargas.',
   },
   course: {
     heading: (
@@ -83,22 +83,38 @@ export default function EmailModal({ isOpen, onClose, title, kind = 'pdf' }: Ema
     e.preventDefault();
     if (!name.trim()) { setError('Por favor ingresa tu nombre.'); return; }
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Por favor ingresa un email válido.'); return; }
-    if (!whatsapp.trim()) { setError('Por favor ingresa tu número de WhatsApp.'); return; }
     if (!accepted) { setError('Debes aceptar recibir contenido de Entrena con Ciencia.'); return; }
     setError('');
 
     const tracking = getTrackingContext();
-    fetch('/api/subscribe', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, whatsapp, source: title ?? null, ...tracking }),
-    }).catch(() => {});
+
+    // Open the tab now, during the click handler, so the browser doesn't block it as a popup.
+    // We'll set its URL once the API responds with the download link.
+    const downloadWindow = kind === 'pdf' ? window.open('', '_blank') : null;
+
+    const [res] = await Promise.allSettled([
+      fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, whatsapp: whatsapp || null, source: title ?? null, ...tracking }),
+      }).then((r) => r.json()),
+    ]);
+
     fetch('/api/resource-events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ event_type: 'form_submit', resource_title: title ?? null, resource_kind: kind, name, email, ...tracking }),
     }).catch(() => {});
     fireConversionEvent('Lead', 'Subscribe', { content_name: title ?? kind, content_category: kind });
+
+    if (downloadWindow) {
+      const url = res.status === 'fulfilled' ? res.value?.downloadUrl : null;
+      if (url) {
+        downloadWindow.location.href = url;
+      } else {
+        downloadWindow.close();
+      }
+    }
 
     setSubmitted(true);
     setTimeout(() => {
@@ -190,7 +206,7 @@ export default function EmailModal({ isOpen, onClose, title, kind = 'pdf' }: Ema
                   onBlur={(e) => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
                 />
                 <input
-                  type="tel" placeholder="WhatsApp (ej. +1 555 123 4567)" value={whatsapp}
+                  type="tel" placeholder="WhatsApp (opcional, ej. +1 555 123 4567)" value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
                   style={inputStyle}
                   onFocus={(e) => (e.target.style.borderColor = CYAN)}

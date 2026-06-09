@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
+const PDF_DOWNLOAD_URLS: Record<string, string> = {
+  'Pierde Grasa con Ciencia': `${process.env.SUPABASE_URL}/storage/v1/object/public/guides/Entrena%20con%20Ciencia%20-%20Guia%20Perdida%20de%20Peso.pdf`,
+  'Proteína con Ciencia':     `${process.env.SUPABASE_URL}/storage/v1/object/public/guides/proteina-con-ciencia.pdf`,
+};
+
 function extractCountryCode(whatsapp: string | null): string | null {
   if (!whatsapp) return null;
   const cleaned = whatsapp.replace(/[\s\-\(\)]/g, '');
@@ -39,8 +44,9 @@ export async function POST(req: NextRequest) {
 
   if (error) {
     console.error('Supabase insert error:', error.message);
-    return NextResponse.json({ error: 'No se pudo guardar los datos' }, { status: 500 });
+    // Don't block the user — return the download URL even if lead capture fails.
   }
 
-  return NextResponse.json({ ok: true });
+  const downloadUrl = source ? (PDF_DOWNLOAD_URLS[source] ?? null) : null;
+  return NextResponse.json({ ok: true, downloadUrl });
 }
