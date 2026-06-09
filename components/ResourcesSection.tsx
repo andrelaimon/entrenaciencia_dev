@@ -14,6 +14,7 @@ interface Resource {
   kind: ResourceKind;
   href?: string;
   coming?: boolean;
+  disabled?: boolean;
 }
 
 const resources: Resource[] = [
@@ -28,8 +29,9 @@ const resources: Resource[] = [
     tag: 'Nutrición',
     title: 'Proteína con Ciencia',
     description: 'Qué es la proteína, para qué sirve, los mitos que la rodean, y cómo aplicar lo que la evidencia dice según tu objetivo y peso corporal.',
-    actionLabel: 'Descargar',
+    actionLabel: 'Próximamente',
     kind: 'pdf',
+    disabled: true,
   },
   {
     tag: 'Herramienta',
@@ -109,7 +111,7 @@ export default function ResourcesSection() {
           {resources.map((resource) => {
             const cardClass = `resource-card${resource.coming ? ' resource-card-coming' : ''}`;
             const tagClass = `resource-tag${resource.coming ? ' resource-tag-coming' : ''}`;
-            const actionClass = `resource-action${resource.coming ? ' resource-action-waitlist' : ''}`;
+            const actionClass = `resource-action${resource.coming ? ' resource-action-waitlist' : ''}${resource.disabled ? ' resource-action-disabled' : ''}`;
 
             const actionContent = (
               <>
@@ -132,7 +134,8 @@ export default function ResourcesSection() {
                   <button
                     type="button"
                     className={actionClass}
-                    onClick={() => handleLeadClick(resource)}
+                    disabled={resource.disabled}
+                    onClick={() => !resource.disabled && handleLeadClick(resource)}
                   >
                     {actionContent}
                   </button>
