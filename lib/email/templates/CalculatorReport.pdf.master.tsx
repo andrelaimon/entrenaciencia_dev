@@ -3,16 +3,20 @@
  *
  * Uses the designer's final PDF (`calculadora_assets/calculadora_output_master.pdf`)
  * as a fixed background and overlays only the dynamic text values via pdf-lib.
- * Each placeholder declares its bounding box and style; we cover the existing
- * sample text with a rectangle in the right background color and redraw the
- * new text on top.
+ *
+ * Each placeholder declares its bounding box, the exact background color sampled
+ * from the master PDF at that position (so the cover rect blends into the gradient
+ * instead of sitting on top of it), and the text style to draw.
  *
  * Coordinates are in pdftotext space (origin top-left, y growing down) — we
  * convert to pdf-lib space (origin bottom-left) at draw time.
  *
- * To add / move a placeholder, find its bbox by running:
+ * To re-sample background colors or find bboxes, render the master at 150 DPI:
+ *   pdftoppm -r 150 -png calculadora_assets/calculadora_output_master.pdf /tmp/master
+ * then use Pillow to read pixel values at the desired point (scale = 150/72).
+ *
+ * To find bboxes for new placeholders:
  *   pdftotext -bbox-layout calculadora_assets/calculadora_output_master.pdf /tmp/bbox.html
- * and copying the xMin/yMin/xMax/yMax of the line you want to replace.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -47,8 +51,7 @@ const poppinsMedium     = loadFont('Poppins-Medium.ttf');
 const poppinsBold       = loadFont('Poppins-Bold.ttf');
 const poppinsExtraBold  = loadFont('Poppins-ExtraBold.ttf');
 
-/* ───────────────────────────── colors ───────────────────────────── */
-// pdf-lib uses 0..1 rgb. Mirror our brand palette.
+/* ───────────────────────────── text colors ─────────────────────────── */
 const C = {
   navy:      rgb(0.004, 0.047, 0.082),
   cyan:      rgb(0.137, 0.827, 1),
@@ -61,34 +64,46 @@ const C = {
   textMuted: rgb(0.45,  0.45,  0.45),
 } as const;
 
-// The designer's body card has a very subtle light-blue gradient; pure white
-// cover rects pop out against it. This off-white tint blends much better.
-const BODY_BG = rgb(0.955, 0.965, 0.975);
+/* ── Per-placeholder background colors ──────────────────────────────────
+ * Sampled from the master PDF rendered at 150 DPI using Pillow, at a point
+ * just outside the original text glyphs so we read true background, not
+ * anti-aliased text pixels.  Each value is stable for a given master PDF;
+ * re-run the sampling script in the file header comment if the master changes.
+ */
+const BG = {
+  header:     rgb(0.004, 0.290, 0.396), // teal gradient at date row  (x=288,y=160)
+  cardNearWh: rgb(0.973, 0.984, 0.988), // card body, left column     (x=170,y=213)
+  pill:       rgb(1.000, 1.000, 1.000), // goal pill interior          (x=72, y=244)
+  donut:      rgb(0.965, 0.980, 0.984), // donut hole                  (x=198,y=309)
+  macroG:     rgb(0.929, 0.961, 0.969), // macro gram column           (x=370,y=286)
+  macroPct:   rgb(0.910, 0.949, 0.957), // macro % column              (x=455,y=286)
+  calBox:     rgb(0.969, 0.984, 0.984), // calorías diarias box        (x=374,y=429)
+  tdee:       rgb(0.980, 0.988, 0.988), // TDEE tile                   (x=138,y=479)
+  adjust:     rgb(0.957, 0.976, 0.980), // Ajuste tile                 (x=240,y=479)
+  dataLeft:   rgb(0.992, 0.996, 0.996), // Tus datos left col          (x=78, y=551)
+  dataMid:    rgb(0.965, 0.980, 0.984), // Tus datos mid col labels    (x=210,y=551)
+  reparto:    rgb(0.945, 0.969, 0.976), // reparto value area mid      (x=285,y=582)
+  actividad:  rgb(0.937, 0.965, 0.969), // actividad value area mid    (x=335,y=609)
+  dataRight:  rgb(0.933, 0.961, 0.969), // Tus datos right col (obj.)  (x=358,y=551)
+} as const;
 
 type ColorKey = keyof typeof C;
-type Bg = 'white' | 'navy';
 type Align = 'left' | 'center' | 'right';
-/** Maps to the four Poppins weights the designer used. */
 type Weight = 'extralight' | 'medium' | 'bold' | 'extrabold';
 
 interface Placeholder {
   id: string;
-  /** Bbox of the master's sample text in pdftotext coords. */
+  /** Bbox of the master's sample text in pdftotext coords (top-left origin). */
   x: number; y: number; w: number; h: number;
-  /** Background color the placeholder sits on — we draw a cover rect in it. */
-  bg: Bg;
+  /** Exact background color sampled from the master PDF at this location.
+   *  Set to null to skip the cover rect (use when the background gradient can't
+   *  be matched with a flat color and the new text overlaps the original). */
+  bgRgb: RGB | null;
   fontSize: number;
   weight?: Weight;
   color: ColorKey;
   align?: Align;
   value: (p: ReportProps) => string;
-  /** Extra horizontal padding around the cover rect (pt). */
-  padX?: number;
-  /** Extra padding below the bbox (handles descender bleed). Default 2. */
-  padBottom?: number;
-  /** Extra padding above the bbox. Default 0 — extending upward usually clips
-   *  cyan labels sitting just above the value row. */
-  padTop?: number;
 }
 
 /* ────────────────────── derived value helpers ─────────────────────── */
@@ -96,8 +111,6 @@ interface Placeholder {
 const fmt = (n: number) => Math.round(n).toLocaleString('es-MX');
 
 function goalDescription(goal: Goal): string {
-  // Strip the parenthetical "(0.70%/semana)" and the "— ritmo X" suffix so the
-  // sentence in the goal pill stays close to the designer's original length.
   return goalLabels[goal]
     .title
     .replace(/\s*\([^)]*\)\s*$/, '')
@@ -105,10 +118,11 @@ function goalDescription(goal: Goal): string {
     .toLowerCase();
 }
 
-function goalRateText(goal: Goal): string {
+function goalRateText(goal: Goal, weightKg: number): string {
   const pct = WEEKLY_GOAL_PCT[goal];
   if (pct === 0) return '';
-  return `${(Math.abs(pct) * 100).toFixed(2)}% por semana`;
+  const kgPerWeek = Math.abs(pct * weightKg);
+  return `${kgPerWeek.toFixed(1)} kg/semana`;
 }
 
 function dateLabel(): string {
@@ -132,194 +146,157 @@ function pctInts(p: ReportProps): [number, number, number] {
 }
 
 /* ───────────────────────── placeholder map ────────────────────────── */
-//
-// Bboxes were extracted with:
-//   pdftotext -bbox-layout lib/email/templates/master.pdf /tmp/bbox.html
-//
-// Cover rectangles get a small padding (padX/padY) to fully hide the
-// sample text underneath. Page is 595 × 842 pt.
 
 const PLACEHOLDERS: Placeholder[] = [
   // ── Hero ──────────────────────────────────────────────────────────
   {
     id: 'date',
-    x: 181, y: 151, w: 214, h: 18,
-    bg: 'navy', fontSize: 11, color: 'cyanSoft', align: 'center',
+    x: 181, y: 151, w: 214, h: 18, bgRgb: BG.header,
+    fontSize: 11, color: 'cyanSoft', align: 'center',
     value: () => `Generado el ${dateLabel()}`,
   },
 
-  // ── Greeting (only the name part) ────────────────────────────────
-  // Designer has "Hola, Andrea." entire phrase as one line. We overwrite the
-  // whole thing because we don't know exactly where "Andrea." starts.
+  // ── Greeting ─────────────────────────────────────────────────────
   {
     id: 'greeting',
-    x: 70, y: 207, w: 86, h: 18, padX: 1,
-    bg: 'white', fontSize: 14, weight: 'extrabold', color: 'yellow', align: 'left',
+    x: 70, y: 207, w: 86, h: 18, bgRgb: BG.cardNearWh,
+    fontSize: 14, weight: 'extrabold', color: 'yellow', align: 'left',
     value: (p) => `Hola, ${p.name}.`,
   },
 
-  // ── Goal pill (two halves: description + rate) ───────────────────
+  // ── Goal pill ────────────────────────────────────────────────────
+  // The pill is transparent — no fill, just a teal border over the card gradient.
+  // The gradient shifts from white (left) to rgb(234,243,245) at the right edge,
+  // so no flat cover rect can match it. Skip the rect and let the new text
+  // paint directly over the original (text is nearly identical so overlap hides it).
   {
     id: 'goal_desc',
-    x: 75, y: 237, w: 319, h: 14, padX: 1,
-    bg: 'white', fontSize: 10, color: 'textDark', align: 'left',
+    x: 75, y: 237, w: 319, h: 14, bgRgb: null,
+    fontSize: 10, color: 'teal', align: 'left',
     value: (p) => `Esto es lo que calculamos para tu objetivo de ${goalDescription(p.inputs.goal)}`,
   },
   {
     id: 'goal_rate',
-    x: 424, y: 237, w: 82, h: 14, padX: 1,
-    bg: 'white', fontSize: 10, weight: 'extrabold', color: 'yellow', align: 'left',
-    value: (p) => goalRateText(p.inputs.goal) || '—',
+    x: 424, y: 237, w: 82, h: 14, bgRgb: null,
+    fontSize: 10, weight: 'extrabold', color: 'yellow', align: 'left',
+    value: (p) => goalRateText(p.inputs.goal, p.inputs.weight) || '—',
   },
 
   // ── Donut centre ─────────────────────────────────────────────────
   {
     id: 'donut_calories',
-    x: 151, y: 298, w: 38, h: 22, padX: 1,
-    bg: 'white', fontSize: 18, weight: 'extrabold', color: 'navy', align: 'center',
+    x: 151, y: 298, w: 38, h: 22, bgRgb: BG.donut,
+    fontSize: 18, weight: 'extrabold', color: 'teal', align: 'center',
     value: (p) => fmt(p.result.calories),
   },
 
   // ── Macro rows (grams + %) ───────────────────────────────────────
-  {
-    id: 'prot_g',  x: 378, y: 279, w: 26, h: 14, padX: 1,
-    bg: 'white', fontSize: 11, weight: 'bold', color: 'yellow', align: 'left',
-    value: (p) => `${p.result.protein} g`,
-  },
-  {
-    id: 'prot_pct', x: 430, y: 279, w: 22, h: 14, padX: 1,
-    bg: 'white', fontSize: 10, color: 'textMuted', align: 'left',
-    value: (p) => `${pctInts(p)[0]}%`,
-  },
-  {
-    id: 'carb_g',  x: 378, y: 307, w: 28, h: 14, padX: 1,
-    bg: 'white', fontSize: 11, weight: 'bold', color: 'yellow', align: 'left',
-    value: (p) => `${p.result.carbs} g`,
-  },
-  {
-    id: 'carb_pct', x: 430, y: 307, w: 22, h: 14, padX: 1,
-    bg: 'white', fontSize: 10, color: 'textMuted', align: 'left',
-    value: (p) => `${pctInts(p)[1]}%`,
-  },
-  {
-    id: 'fat_g',   x: 378, y: 335, w: 24, h: 14, padX: 1,
-    bg: 'white', fontSize: 11, weight: 'bold', color: 'yellow', align: 'left',
-    value: (p) => `${p.result.fat} g`,
-  },
-  {
-    id: 'fat_pct',  x: 430, y: 335, w: 22, h: 14, padX: 1,
-    bg: 'white', fontSize: 10, color: 'textMuted', align: 'left',
-    value: (p) => `${pctInts(p)[2]}%`,
-  },
+  { id: 'prot_g',   x: 378, y: 279, w: 26, h: 14, bgRgb: BG.macroG,
+    fontSize: 11, weight: 'bold', color: 'teal', align: 'left',
+    value: (p) => `${p.result.protein} g` },
+  { id: 'prot_pct', x: 430, y: 279, w: 22, h: 14, bgRgb: BG.macroPct,
+    fontSize: 10, color: 'teal', align: 'left',
+    value: (p) => `${pctInts(p)[0]}%` },
+  { id: 'carb_g',   x: 378, y: 307, w: 28, h: 14, bgRgb: BG.macroG,
+    fontSize: 11, weight: 'bold', color: 'teal', align: 'left',
+    value: (p) => `${p.result.carbs} g` },
+  { id: 'carb_pct', x: 430, y: 307, w: 22, h: 14, bgRgb: BG.macroPct,
+    fontSize: 10, color: 'teal', align: 'left',
+    value: (p) => `${pctInts(p)[1]}%` },
+  { id: 'fat_g',    x: 378, y: 335, w: 24, h: 14, bgRgb: BG.macroG,
+    fontSize: 11, weight: 'bold', color: 'teal', align: 'left',
+    value: (p) => `${p.result.fat} g` },
+  { id: 'fat_pct',  x: 430, y: 335, w: 22, h: 14, bgRgb: BG.macroPct,
+    fontSize: 10, color: 'teal', align: 'left',
+    value: (p) => `${pctInts(p)[2]}%` },
 
-  // ── Calorías diarias callout (Cómo calculamos) ───────────────────
+  // ── Calorías diarias callout ──────────────────────────────────────
   {
     id: 'cal_diarias',
-    x: 376, y: 417, w: 40, h: 24, padX: 1,
-    bg: 'white', fontSize: 18, weight: 'extrabold', color: 'navy', align: 'center',
+    x: 376, y: 417, w: 40, h: 24, bgRgb: BG.calBox,
+    fontSize: 18, weight: 'extrabold', color: 'teal', align: 'center',
     value: (p) => fmt(p.result.calories),
   },
 
   // ── Hex tiles: TDEE + Ajuste ─────────────────────────────────────
   {
     id: 'tdee',
-    x: 145, y: 472, w: 26, h: 14, padX: 1,
-    bg: 'white', fontSize: 12, weight: 'bold', color: 'navy', align: 'center',
+    x: 145, y: 472, w: 26, h: 14, bgRgb: BG.tdee,
+    fontSize: 12, weight: 'bold', color: 'teal', align: 'center',
     value: (p) => fmt(p.result.tdee),
   },
   {
     id: 'adjust',
-    x: 247, y: 472, w: 20, h: 14, padX: 1,
-    bg: 'white', fontSize: 12, weight: 'bold', color: 'navy', align: 'center',
+    x: 247, y: 472, w: 20, h: 14, bgRgb: BG.adjust,
+    fontSize: 12, weight: 'bold', color: 'teal', align: 'center',
     value: (p) => fmt(Math.abs(goalAdjustment(p.inputs.weight, p.inputs.goal))),
   },
 
   // ── Tus datos (3-col grid) ───────────────────────────────────────
-  {
-    id: 'sexo',
-    x: 86, y: 545, w: 130, h: 14, padX: 1,
-    bg: 'white', fontSize: 11, weight: 'bold', color: 'navy', align: 'left',
-    value: (p) => (p.inputs.sex === 'male' ? 'Masculino' : 'Femenino'),
-  },
-  {
-    id: 'edad',
-    x: 219, y: 545, w: 130, h: 14, padX: 1,
-    bg: 'white', fontSize: 11, weight: 'bold', color: 'navy', align: 'left',
-    value: (p) => `${p.inputs.age} años`,
-  },
-  // Objetivo spans 2 lines in the master. We overwrite both with one wrap.
-  // The cover boxes extend further right because the new text (with the rate
-  // descriptor) is wider than the original "Pérdida de peso -" sample.
-  {
-    id: 'objetivo_l1',
-    x: 364, y: 545, w: 110, h: 14, padX: 1,
-    bg: 'white', fontSize: 11, weight: 'bold', color: 'navy', align: 'left',
+  // Widths are sized to the longest possible value + 4 pt buffer, not the full
+  // column width, so the cover rect doesn't leave a visible band past the text.
+  { id: 'sexo',
+    x: 86, y: 545, w: 65, h: 14, bgRgb: BG.dataLeft,    // "Masculino" ≈ 55 pt
+    fontSize: 11, weight: 'bold', color: 'teal', align: 'left',
+    value: (p) => (p.inputs.sex === 'male' ? 'Masculino' : 'Femenino') },
+  { id: 'edad',
+    x: 219, y: 545, w: 52, h: 14, bgRgb: BG.dataMid,    // "80 años" ≈ 44 pt
+    fontSize: 11, weight: 'bold', color: 'teal', align: 'left',
+    value: (p) => `${p.inputs.age} años` },
+  { id: 'objetivo_l1',
+    x: 364, y: 545, w: 100, h: 14, bgRgb: BG.dataRight, // "Pérdida de peso —" ≈ 95 pt
+    fontSize: 11, weight: 'bold', color: 'teal', align: 'left',
     value: (p) => {
-      // Mirror the designer: short base goal name on line 1 with a trailing dash,
-      // rate ("0.70% por semana") on line 2 — written by objetivo_l2.
       const base = goalLabels[p.inputs.goal].title
         .replace(/\s*\([^)]*\)\s*$/, '')
         .replace(/\s*—\s*ritmo\s+\S+\s*$/i, '');
       return `${base} —`;
-    },
-  },
-  {
-    id: 'objetivo_l2',
-    x: 364, y: 557, w: 110, h: 14, padX: 1,
-    bg: 'white', fontSize: 11, weight: 'bold', color: 'navy', align: 'left',
-    value: (p) => goalRateText(p.inputs.goal) || 'sin ajuste',
-  },
-  {
-    id: 'peso',
-    x: 86, y: 575, w: 130, h: 14, padX: 1,
-    bg: 'white', fontSize: 11, weight: 'bold', color: 'navy', align: 'left',
+    } },
+  { id: 'objetivo_l2',
+    x: 364, y: 557, w: 85, h: 14, bgRgb: BG.dataRight,  // "0.5 kg/semana" ≈ 78 pt
+    fontSize: 11, weight: 'bold', color: 'teal', align: 'left',
+    value: (p) => goalRateText(p.inputs.goal, p.inputs.weight) || 'sin ajuste' },
+  { id: 'peso',
+    x: 86, y: 575, w: 52, h: 14, bgRgb: BG.dataLeft,    // "300 kg" ≈ 42 pt
+    fontSize: 11, weight: 'bold', color: 'teal', align: 'left',
     value: (p) => {
       const lb = (p.inputs.weight / 0.45359237).toFixed(0);
       return p.inputs.units === 'imperial' ? `${lb} lb` : `${p.inputs.weight} kg`;
-    },
-  },
-  {
-    id: 'reparto',
-    x: 219, y: 575, w: 200, h: 14, padX: 1,
-    bg: 'white', fontSize: 11, weight: 'bold', color: 'navy', align: 'left',
-    value: (p) => macroSplitLabels[p.inputs.macroSplit].title,
-  },
-  {
-    id: 'talla',
-    x: 86, y: 602, w: 130, h: 14, padX: 1,
-    bg: 'white', fontSize: 11, weight: 'bold', color: 'navy', align: 'left',
+    } },
+  { id: 'reparto',
+    x: 219, y: 575, w: 135, h: 14, bgRgb: BG.reparto,   // "Bajo en carbohidratos" ≈ 125 pt
+    fontSize: 11, weight: 'bold', color: 'teal', align: 'left',
+    value: (p) => macroSplitLabels[p.inputs.macroSplit].title },
+  { id: 'talla',
+    x: 86, y: 602, w: 52, h: 14, bgRgb: BG.dataLeft,    // "230 cm" ≈ 45 pt
+    fontSize: 11, weight: 'bold', color: 'teal', align: 'left',
     value: (p) => {
       const inches = (p.inputs.height / 2.54).toFixed(0);
       return p.inputs.units === 'imperial' ? `${inches} in` : `${p.inputs.height} cm`;
-    },
-  },
-  {
-    id: 'actividad',
-    x: 219, y: 602, w: 200, h: 14, padX: 1,
-    bg: 'white', fontSize: 11, weight: 'bold', color: 'navy', align: 'left',
-    value: (p) => activityLabels[p.inputs.activity].title,
-  },
+    } },
+  { id: 'actividad',
+    x: 219, y: 602, w: 135, h: 14, bgRgb: BG.actividad, // "Moderadamente activo" ≈ 125 pt
+    fontSize: 11, weight: 'bold', color: 'teal', align: 'left',
+    value: (p) => activityLabels[p.inputs.activity].title },
 ];
 
 /* ───────────────────────────── renderer ───────────────────────────── */
 
 export async function renderCalculatorReportPdfMaster(props: ReportProps): Promise<Buffer> {
   if (!masterBytes) {
-    throw new Error('[pdf-master] master.pdf is not loaded — check lib/email/templates/master.pdf');
+    throw new Error('[pdf-master] master.pdf is not loaded — check calculadora_assets/calculadora_output_master.pdf');
   }
 
   const pdf = await PDFDocument.load(masterBytes);
+  pdf.setTitle('Reporte de Calorías — Entrena con Ciencia');
   pdf.registerFontkit(fontkit);
   const page = pdf.getPages()[0];
   const pageH = page.getHeight();
 
-  // Match the designer: Poppins (ExtraLight / Medium / Bold / ExtraBold).
-  // If a weight file is missing we silently fall back to Medium so the route
-  // doesn't fail outright.
-  const fontMedium    = poppinsMedium     ? await pdf.embedFont(poppinsMedium)     : null;
-  const fontBold      = poppinsBold       ? await pdf.embedFont(poppinsBold)       : fontMedium;
-  const fontExtraBold = poppinsExtraBold  ? await pdf.embedFont(poppinsExtraBold)  : fontBold;
-  const fontExtraLight= poppinsExtraLight ? await pdf.embedFont(poppinsExtraLight) : fontMedium;
+  const fontMedium     = poppinsMedium     ? await pdf.embedFont(poppinsMedium)     : null;
+  const fontBold       = poppinsBold       ? await pdf.embedFont(poppinsBold)       : fontMedium;
+  const fontExtraBold  = poppinsExtraBold  ? await pdf.embedFont(poppinsExtraBold)  : fontBold;
+  const fontExtraLight = poppinsExtraLight ? await pdf.embedFont(poppinsExtraLight) : fontMedium;
 
   const fonts: Record<Weight, PDFFont | null> = {
     extralight: fontExtraLight,
@@ -328,16 +305,26 @@ export async function renderCalculatorReportPdfMaster(props: ReportProps): Promi
     extrabold:  fontExtraBold,
   };
 
+  // ── Goal pill cover ───────────────────────────────────────────────
+  // The pill has no fill — it's a transparent border over the card gradient.
+  // Three segments approximate the gradient (white→rgb(238,245,247)) well enough
+  // to be invisible while fully hiding the original sample text underneath.
+  const pillY = pageH - 251.935 - 2;
+  const pillH = 16;
+  for (const [x, w, color] of [
+    [73,  130, rgb(0.992, 0.996, 0.996)] as const,  // near-white left
+    [203, 150, rgb(0.973, 0.984, 0.988)] as const,  // mid
+    [353, 162, rgb(0.933, 0.961, 0.969)] as const,  // more saturated right
+  ]) {
+    page.drawRectangle({ x, y: pillY, width: w, height: pillH, color });
+  }
+
   for (const ph of PLACEHOLDERS) {
     drawPlaceholder(page, pageH, ph, props, fonts);
   }
 
   const out = await pdf.save();
   return Buffer.from(out);
-}
-
-function bgColor(bg: Bg): RGB {
-  return bg === 'navy' ? C.navy : BODY_BG;
 }
 
 function drawPlaceholder(
@@ -354,30 +341,27 @@ function drawPlaceholder(
     console.warn(`[pdf-master] no font available for placeholder ${ph.id}; skipping`);
     return;
   }
-  const padX = ph.padX ?? 3;
-  const padBottom = ph.padBottom ?? 2;
-  const padTop = ph.padTop ?? 0;
 
-  // Cover the sample text with a rectangle in the background color. Pad below
-  // by default; never extend above the bbox unless padTop is explicit so we
-  // don't eat into cyan labels sitting on the row immediately above.
-  page.drawRectangle({
-    x: ph.x - padX,
-    y: pageH - (ph.y + ph.h) - padBottom,
-    width: ph.w + padX * 2,
-    height: ph.h + padBottom + padTop,
-    color: bgColor(ph.bg),
-  });
+  // Cover the original sample text (skip when bgRgb is null — gradient background
+  // that can't be matched with a flat color; new text overlaps original instead).
+  if (ph.bgRgb !== null) {
+    page.drawRectangle({
+      x: ph.x - 2,
+      y: pageH - (ph.y + ph.h) - 2,
+      width: ph.w + 4,
+      height: ph.h + 2,
+      color: ph.bgRgb,
+    });
+  }
 
-  // Measure and place new text.
+  // Measure and align the new text within the placeholder bbox.
   const width = font.widthOfTextAtSize(text, ph.fontSize);
   let drawX = ph.x;
   if (ph.align === 'center') drawX = ph.x + (ph.w - width) / 2;
   else if (ph.align === 'right') drawX = ph.x + ph.w - width;
 
-  // Place the baseline at top-of-bbox + font ascent (the real ascent reported
-  // by the embedded TTF), so the new glyphs sit exactly where the designer's
-  // sample sat — independent of how loose pdftotext's bbox height was.
+  // Baseline placement: top-of-bbox minus the font's real ascent so glyphs
+  // sit at the same vertical position as the designer's original sample text.
   const ascent = font.heightAtSize(ph.fontSize, { descender: false });
   const baselineY = pageH - ph.y - ascent;
 

@@ -36,7 +36,7 @@ export async function GET(req: Request) {
     activity:     1.55,
     goal:         preg ? 'maintain' : 'loss',
     macroSplit:   'balanced',
-    proteinLevel: 'high',
+    proteinLevel: 'standard',
     units:        'metric',
     pregnancyLactation: preg,
   };
