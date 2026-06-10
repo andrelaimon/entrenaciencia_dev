@@ -186,13 +186,28 @@ export function lossGoalRedundant(profile: ProjectionProfile, goal: Goal): boole
 export const LOSS_REDUNDANT_HINT =
   'No disponible: este ritmo te dejaría comiendo demasiado poco sin ningún beneficio extra. El conservador logra la misma pérdida en 3 meses, de manera más segura.';
 
-/** Protein bands (g/kg of TOTAL body weight) — [mín, media, máx] per level
- *  (spec v13 §6). The media is the recommended figure; the band feeds the
- *  mín–máx interval shown in the report. Always capped at 40% of calories. */
-export const PROTEIN_BANDS: Record<ProteinLevel, readonly [number, number, number]> = {
+/** BMI threshold separating normal-weight from obese protein coefficients. */
+export const OBESITY_BMI = 30;
+
+/** Protein bands (g/kg of TOTAL body weight) — [mín, media, máx] per level.
+ *  The media is the recommended figure; the band feeds the mín–máx interval
+ *  shown in the report. Always capped at 40% of calories. Two tables: one for
+ *  IMC < 30, one for IMC ≥ 30 (clinically realistic range 1.2–1.6 for obese). */
+export const PROTEIN_BANDS_NORMAL: Record<ProteinLevel, readonly [number, number, number]> = {
   high:     [2.0, 2.2, 2.4],
   standard: [1.4, 1.6, 1.8],
 };
+
+export const PROTEIN_BANDS_OBESE: Record<ProteinLevel, readonly [number, number, number]> = {
+  high:     [1.4, 1.6, 1.8],
+  standard: [1.2, 1.4, 1.6],
+};
+
+export function proteinBandsFor(
+  bmiValue: number,
+): Record<ProteinLevel, readonly [number, number, number]> {
+  return bmiValue >= OBESITY_BMI ? PROTEIN_BANDS_OBESE : PROTEIN_BANDS_NORMAL;
+}
 
 /** Fat bands (fraction of calories to fat) — [mín, media, máx] per split
  *  (spec v13 §6). Each value is floored at 40 g and capped at 35% of calories. */
@@ -216,10 +231,12 @@ export const CARB_FLOOR_G_PER_KG = { surplus: 2.0, default: 1.0 } as const;
 
 export const GAIN_GOALS: Goal[] = ['leve_gain', 'gain'];
 
-/** Default protein tier when the user hasn't chosen one: Alto for loss,
- *  Estándar for maintenance/gain (spec v13 §6). */
-export function defaultProteinLevel(goal: Goal): ProteinLevel {
-  return LOSS_GOALS.includes(goal) ? 'high' : 'standard';
+/** Default protein tier when the user hasn't chosen one.
+ *  Loss + IMC < 30 → Alto; Loss + IMC ≥ 30 → Estándar (realistic for obese);
+ *  maintenance/gain → Estándar. */
+export function defaultProteinLevel(goal: Goal, bmiValue = 0): ProteinLevel {
+  if (!LOSS_GOALS.includes(goal)) return 'standard';
+  return bmiValue >= OBESITY_BMI ? 'standard' : 'high';
 }
 
 /** Sex-based safe-calorie floors (v15 §"piso"). Used as the loss floor ONLY for
@@ -364,7 +381,6 @@ export function calculateCalories(input: CalcInput): CalcResult | { blocked: tru
     goal,
     weight,
     macroSplit = 'balanced',
-    proteinLevel = defaultProteinLevel(goal),
     pregnancyLactation = false,
   } = input;
 
@@ -376,6 +392,9 @@ export function calculateCalories(input: CalcInput): CalcResult | { blocked: tru
   ) {
     return { blocked: true, warning: 'validacion' };
   }
+
+  const bmiValue = bmi(weight, height);
+  const proteinLevel = input.proteinLevel ?? defaultProteinLevel(goal, bmiValue);
 
   const bmr = bmrMifflin(input);
   const tdee = bmr * activity;
@@ -394,7 +413,6 @@ export function calculateCalories(input: CalcInput): CalcResult | { blocked: tru
   let targetCalories = tdee + goalAdjustment(weight, goal);
   if (isLoss) {
     if (pregnancyLactation) return { blocked: true, warning: 'bloqueo_embarazo' };
-    const bmiValue = bmi(weight, height);
     if (bmiValue < UNDERWEIGHT_BMI) return { blocked: true, warning: 'bajo_peso' };
     const piso = lossFloorKcal({ sex, bmiValue, bmr });
     const served = Math.max(targetCalories, piso);
@@ -415,7 +433,7 @@ export function calculateCalories(input: CalcInput): CalcResult | { blocked: tru
 
   // Bands [mín, media, máx]. The media values are the recommended figures; the
   // mín/máx feed the interval shown in the report (spec v13 §6).
-  const [pMinC, pMedC, pMaxC] = PROTEIN_BANDS[proteinLevel];
+  const [pMinC, pMedC, pMaxC] = proteinBandsFor(bmiValue)[proteinLevel];
   const proteinMinG = proteinGramsFor(pMinC, weight, targetCalories);
   const proteinMaxG = proteinGramsFor(pMaxC, weight, targetCalories);
 

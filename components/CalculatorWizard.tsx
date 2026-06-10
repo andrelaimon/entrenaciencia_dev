@@ -33,6 +33,8 @@ import {
   lbToKg,
   inToCm,
   calculateCalories,
+  bmi,
+  OBESITY_BMI,
   BLOCK_MESSAGES,
   BLOCK_GOAL_HINT,
   type ActivityLevel,
@@ -943,7 +945,7 @@ function FormStep({ form, setForm, pregnancyLactation, submitting, submitError, 
     if (g === 'maintain') return null;
     if (pregnancyLactation && LOSS_GOALS.includes(g)) return 'bloqueo_embarazo';
     if (!goalProfile) return null;
-    return comboOutcome(g, defaultProteinLevel(g), 'balanced').block;
+    return comboOutcome(g, defaultProteinLevel(g, bmi(goalProfile.weight, goalProfile.height)), 'balanced').block;
   };
 
   // v13 — the aggressive loss rate is disabled when it collapses to the same
@@ -1178,8 +1180,8 @@ function FormStep({ form, setForm, pregnancyLactation, submitting, submitError, 
                     setForm({
                       ...form,
                       goal: g,
-                      // Spec v13 §6 defaults: Pérdida → Alto, resto → Estándar; reparto Balanceado.
-                      proteinLevel: defaultProteinLevel(g),
+                      // Default: loss+IMC<30 → Alto, loss+IMC≥30 → Estándar, resto → Estándar.
+                      proteinLevel: defaultProteinLevel(g, goalProfile ? bmi(goalProfile.weight, goalProfile.height) : 0),
                       macroSplit: 'balanced',
                     })
                   }
@@ -1248,7 +1250,8 @@ function FormStep({ form, setForm, pregnancyLactation, submitting, submitError, 
         <>
           <SectionLabel>
             Proteína
-            {form.goal !== null && LOSS_GOALS.includes(form.goal) && (
+            {form.goal !== null && LOSS_GOALS.includes(form.goal) &&
+              goalProfile && bmi(goalProfile.weight, goalProfile.height) < OBESITY_BMI && (
               <span className="normal-case">
                 <InfoTooltip text={PROTEIN_DEFICIT_NOTE} />
               </span>
@@ -1257,18 +1260,11 @@ function FormStep({ form, setForm, pregnancyLactation, submitting, submitError, 
           <div className="flex flex-wrap gap-2 mt-3">
             {PROTEIN_LEVELS.map((p) => {
               const pFeasible = form.goal === null || proteinLevelFeasible(form.goal, p);
-              // In a deficit we lock protein to "Alto" to protect muscle mass:
-              // disable "Estándar" by default (unless "Alto" isn't feasible).
-              const lockedByDeficit =
-                form.goal !== null &&
-                LOSS_GOALS.includes(form.goal) &&
-                p === 'standard' &&
-                proteinLevelFeasible(form.goal, 'high');
               return (
                 <PillButton
                   key={p}
                   active={form.proteinLevel === p}
-                  disabled={!pFeasible || lockedByDeficit}
+                  disabled={!pFeasible}
                   onClick={() => {
                     if (form.goal !== null) {
                       setForm({ ...form, proteinLevel: p, macroSplit: firstFeasibleSplit(form.goal, p) });
