@@ -490,7 +490,7 @@ h2 .accent { color: var(--cyan); }
 .evidence-paper {
   position: absolute;
   top: 50%;
-  right: 240px;
+  right: min(240px, calc(100% - 270px));
   width: 250px;
   padding: 18px 18px 14px;
   background: #fdfdf9;
@@ -1188,9 +1188,9 @@ footer p {
   .hero { padding: 120px 20px 60px; }
   .hero h1 .hero-eyebrow-line { white-space: normal; font-size: clamp(1.3rem, 5vw, 1.8rem); }
   .why-grid { grid-template-columns: 1fr; gap: 32px; margin-top: 28px; }
-  .why-visual { min-height: 0; padding: 0; margin-top: 0; justify-content: center; flex-direction: column; align-items: center; gap: 24px; }
-  .evidence-paper { position: relative; top: auto; right: auto; left: auto; width: 100%; max-width: 320px; transform: rotate(-3deg); }
-  .gurus-mockup { max-width: 340px; padding: 24px 20px 56px; }
+  .why-visual { display: block; position: relative; width: 100%; height: 380px; max-width: 400px; margin: 0 auto; min-height: 0; padding: 0; }
+  .evidence-paper { position: absolute; top: 50%; left: -10px; right: auto; width: 250px; transform: translateY(-50%) rotate(-9deg); }
+  .gurus-mockup { position: absolute; top: 0; right: 0; left: auto; width: 270px; max-width: 270px; padding: 16px 14px 52px; }
 
   /* Pillars — match compact desktop on mobile */
   .pillars { padding-top: 48px; padding-bottom: 48px; }
