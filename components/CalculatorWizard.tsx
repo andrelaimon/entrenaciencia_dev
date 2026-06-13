@@ -1382,6 +1382,9 @@ function FormStep({ form, setForm, pregnancyLactation, submitting, submitError, 
 function ConfirmationStep({ report }: {
   report: { name: string; inputs: Record<string, unknown>; result: CalcResult };
 }) {
+  const [dlState, setDlState] = useState<'loading' | 'done' | 'error'>('loading');
+  const blobUrlRef = useRef<string | null>(null);
+
   useEffect(() => {
     fetch('/api/calculator-report-pdf', {
       method: 'POST',
@@ -1389,20 +1392,54 @@ function ConfirmationStep({ report }: {
       body: JSON.stringify(report),
     })
       .then(async (res) => {
-        if (!res.ok) return;
+        if (!res.ok) { setDlState('error'); return; }
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
+        blobUrlRef.current = url;
         const a = document.createElement('a');
         a.href = url;
         a.download = 'reporte-entrenaconciencia.pdf';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        setDlState('done');
       })
-      .catch(() => {});
+      .catch(() => setDlState('error'));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function triggerDownload() {
+    if (blobUrlRef.current) {
+      const a = document.createElement('a');
+      a.href = blobUrlRef.current;
+      a.download = 'reporte-entrenaconciencia.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } else {
+      // Re-fetch if blob is gone
+      setDlState('loading');
+      fetch('/api/calculator-report-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(report),
+      })
+        .then(async (res) => {
+          if (!res.ok) { setDlState('error'); return; }
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          blobUrlRef.current = url;
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'reporte-entrenaconciencia.pdf';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setDlState('done');
+        })
+        .catch(() => setDlState('error'));
+    }
+  }
 
   return (
     <motion.div {...stepMotion} style={cardStyle} className="p-10 md:p-14 text-center">
@@ -1420,15 +1457,28 @@ function ConfirmationStep({ report }: {
         Gracias.
       </h2>
       <p className="leading-relaxed max-w-md mx-auto mb-8" style={{ color: '#ffffff' }}>
-        Tu reporte debería empezar a descargarse en unos segundos.
+        {dlState === 'loading' && 'Preparando tu reporte…'}
+        {dlState === 'done'    && 'Tu reporte se está descargando.'}
+        {dlState === 'error'   && 'Hubo un problema generando tu reporte.'}
       </p>
-      <Link
-        href="/"
-        className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-sm font-bold transition"
-        style={{ background: 'linear-gradient(135deg, #FFC300 0%, #FFDC6B 100%)', color: '#010d15', fontWeight: 700 }}
-      >
-        Volver al inicio
-      </Link>
+      {(dlState === 'done' || dlState === 'error') && (
+        <button
+          onClick={triggerDownload}
+          className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-sm font-bold transition mb-4"
+          style={{ background: 'linear-gradient(135deg, #FFC300 0%, #FFDC6B 100%)', color: '#010d15', fontWeight: 700 }}
+        >
+          {dlState === 'error' ? 'Reintentar descarga' : 'Descargar de nuevo'}
+        </button>
+      )}
+      <div>
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-sm font-bold transition"
+          style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}
+        >
+          Volver al inicio
+        </Link>
+      </div>
     </motion.div>
   );
 }
