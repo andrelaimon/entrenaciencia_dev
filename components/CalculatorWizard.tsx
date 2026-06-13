@@ -1410,7 +1410,7 @@ function ConfirmationStep() {
         Gracias.
       </h2>
       <p className="leading-relaxed max-w-md mx-auto mb-8" style={{ color: '#ffffff' }}>
-        Te enviaremos tu reporte personalizado por correo en los próximos minutos.
+        Tu reporte debería empezar a descargarse en unos segundos.
       </p>
       <Link
         href="/"
