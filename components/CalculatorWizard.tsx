@@ -44,6 +44,7 @@ import {
   type ProteinLevel,
   type CalcWarning,
   type CalcBlock,
+  type CalcResult,
 } from '@/lib/calorieCalculator';
 
 type Step = 'intro' | 'screening' | 'form';
@@ -196,6 +197,11 @@ export default function CalculatorWizard() {
   const [form, setForm] = useState<FormState>(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedReport, setSubmittedReport] = useState<{
+    name: string;
+    inputs: Record<string, unknown>;
+    result: CalcResult;
+  } | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const wizardSessionId = useRef<string>(crypto.randomUUID());
@@ -237,8 +243,8 @@ export default function CalculatorWizard() {
   return (
     <div className="max-w-3xl mx-auto py-12 px-6">
       <AnimatePresence mode="wait">
-        {submitted ? (
-          <ConfirmationStep key="done" />
+        {submitted && submittedReport ? (
+          <ConfirmationStep key="done" report={submittedReport} />
         ) : step === 'intro' ? (
           <IntroStep key="intro" onNext={() => setStep('screening')} />
         ) : step === 'screening' ? (
@@ -318,31 +324,11 @@ export default function CalculatorWizard() {
                   body: JSON.stringify(payload),
                 }).catch(() => {});
 
-                // Client-testing aid: trigger a PDF download with the user's
-                // computed report so the team can verify numbers without
-                // waiting on the email pipeline.
-                fetch('/api/calculator-report-pdf', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    name:   form.name.trim(),
-                    inputs: { ...calcInput, units: form.units },
-                    result,
-                  }),
-                })
-                  .then(async (res) => {
-                    if (!res.ok) return;
-                    const blob = await res.blob();
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'reporte-entrenaconciencia.pdf';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    setTimeout(() => URL.revokeObjectURL(url), 1000);
-                  })
-                  .catch(() => {});
+                setSubmittedReport({
+                  name:   form.name.trim(),
+                  inputs: { ...calcInput, units: form.units } as Record<string, unknown>,
+                  result,
+                });
 
                 submittedRef.current = true;
                 fireConversionEvent('CompleteRegistration', 'CompleteRegistration', {
@@ -1393,7 +1379,31 @@ function FormStep({ form, setForm, pregnancyLactation, submitting, submitError, 
 
 /* ─────────────────────────── Confirmation ───────────────────────────── */
 
-function ConfirmationStep() {
+function ConfirmationStep({ report }: {
+  report: { name: string; inputs: Record<string, unknown>; result: CalcResult };
+}) {
+  useEffect(() => {
+    fetch('/api/calculator-report-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(report),
+    })
+      .then(async (res) => {
+        if (!res.ok) return;
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'reporte-entrenaconciencia.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <motion.div {...stepMotion} style={cardStyle} className="p-10 md:p-14 text-center">
       <div
