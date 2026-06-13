@@ -1392,7 +1392,11 @@ function ConfirmationStep({ report }: {
       body: JSON.stringify(report),
     })
       .then(async (res) => {
-        if (!res.ok) { setDlState('error'); return; }
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          console.error('[pdf] server error:', body);
+          setDlState('error'); return;
+        }
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         blobUrlRef.current = url;

@@ -4,6 +4,7 @@ import type { CalcResult } from '@/lib/calorieCalculator';
 import type { ReportInputs } from '@/lib/email/templates/sections';
 
 export const runtime = 'nodejs';
+export const maxDuration = 60; // Chromium cold-start needs up to ~30s on Vercel
 
 // Returns the personalized PDF as a download. Used by the wizard to let users
 // (and the client team) inspect their report immediately after submitting —
@@ -40,7 +41,8 @@ export async function POST(req: Request) {
       },
     });
   } catch (err) {
-    console.error('[calculator-report-pdf] render failed:', err);
-    return NextResponse.json({ ok: false, error: 'render_failed' }, { status: 500 });
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[calculator-report-pdf] render failed:', msg);
+    return NextResponse.json({ ok: false, error: 'render_failed', detail: msg }, { status: 500 });
   }
 }
