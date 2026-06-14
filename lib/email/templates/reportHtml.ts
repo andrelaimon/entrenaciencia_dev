@@ -123,10 +123,10 @@ export function buildReportHtml({ name, inputs, result }: ReportProps): string {
 <meta charset="UTF-8">
 <title>Reporte Personalizado — Entrena con Ciencia</title>
 <style>
-  @font-face { font-family: 'Poppins'; font-weight: 200; src: url('data:font/truetype;base64,${F.xl}'); }
-  @font-face { font-family: 'Poppins'; font-weight: 500; src: url('data:font/truetype;base64,${F.md}'); }
-  @font-face { font-family: 'Poppins'; font-weight: 700; src: url('data:font/truetype;base64,${F.bd}'); }
-  @font-face { font-family: 'Poppins'; font-weight: 800; src: url('data:font/truetype;base64,${F.xb}'); }
+  @font-face { font-family: 'Poppins'; font-weight: 200; font-display: block; src: url('data:font/ttf;base64,${F.xl}') format('truetype'); }
+  @font-face { font-family: 'Poppins'; font-weight: 500; font-display: block; src: url('data:font/ttf;base64,${F.md}') format('truetype'); }
+  @font-face { font-family: 'Poppins'; font-weight: 700; font-display: block; src: url('data:font/ttf;base64,${F.bd}') format('truetype'); }
+  @font-face { font-family: 'Poppins'; font-weight: 800; font-display: block; src: url('data:font/ttf;base64,${F.xb}') format('truetype'); }
 
   :root {
     --bl: -0.80em;
