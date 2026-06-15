@@ -26,6 +26,18 @@ const F = {
   xb: loadB64('Poppins-ExtraBold.ttf'), // weight 800
 };
 
+/* Brand isotipo, inlined so it's available at screenshot time. */
+const LOGO_B64 = (() => {
+  try {
+    return fs.readFileSync(
+      path.join(process.cwd(), 'public', 'images', 'isotipo-cyan.png'),
+    ).toString('base64');
+  } catch {
+    console.warn('[reportHtml] logo not found: isotipo-cyan.png');
+    return '';
+  }
+})();
+
 /* ── Donut arc helpers ───────────────────────────────────────────────── */
 
 function descArc(cx: number, cy: number, r: number, a1: number, a2: number): string {
@@ -257,6 +269,10 @@ export function buildReportHtml({ name, inputs, result }: ReportProps): string {
       <path opacity=".05" fill="#017ea7" d="M240.08,168.83c-1.96,0-3.91-.5-5.66-1.51l-36.94-21.33c-3.49-2.02-5.66-5.77-5.66-9.8v-42.65c0-4.03,2.17-7.79,5.66-9.8l36.94-21.33c3.49-2.02,7.83-2.02,11.32,0l36.94,21.33c3.49,2.02,5.66,5.77,5.66,9.8v42.65c0,4.03-2.17,7.79-5.66,9.8l-36.94,21.33c-1.75,1.01-3.7,1.51-5.66,1.51ZM240.08,62.09c-1.75,0-3.5.45-5.06,1.35l-36.94,21.33c-3.12,1.8-5.06,5.17-5.07,8.77v42.65c0,3.61,1.94,6.97,5.07,8.77l36.94,21.33c3.12,1.8,7.01,1.8,10.13,0l36.94-21.33c3.12-1.8,5.06-5.17,5.06-8.77v-42.65c0-3.61-1.94-6.97-5.06-8.77l-36.94-21.33c-1.56-.9-3.31-1.35-5.07-1.35Z"/>
     </svg>
   </div>
+
+  <!-- Brand isotipo -->
+  <img src="data:image/png;base64,${LOGO_B64}" alt=""
+       style="position:absolute;left:399.34px;top:90px;width:50px;height:50px;"/>
 
   <!-- Header text -->
   <div class="t tc f-title"    style="left:126.84px;top:168.24px;width:595px;">Entrena con Ciencia</div>
