@@ -159,7 +159,13 @@ export function buildReportHtml({ name, inputs, result }: ReportProps): string {
     background: #fff; overflow: hidden; font-family: 'Poppins', sans-serif;
   }
 
-  .t  { position: absolute; line-height: 1; white-space: nowrap; transform: translateY(var(--bl)); }
+  /* Baseline correction: shift text up by ~0.8em so the visual baseline
+     aligns with the absolute top coordinate. Uses margin-top instead of
+     transform: translateY() because Chromium flattens margins into final
+     box positions during print layout, while transforms get emitted as
+     content-stream matrices that iOS PDFKit may ignore — which causes
+     every text label to drop out of its box on iPhone/iPad. */
+  .t  { position: absolute; line-height: 1; white-space: nowrap; margin-top: var(--bl); }
   .tc { text-align: center; white-space: nowrap; }
 
   .f-title    { font-size: 18px; font-weight: 800; color: var(--white); }
