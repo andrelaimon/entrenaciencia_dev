@@ -24,7 +24,7 @@ const SAMPLE: ReportProps = {
     weight: 68,
     height: 165,
     activity: 1.55,
-    goal: 'lose',
+    goal: 'loss',
     macroSplit: 'balanced',
     proteinLevel: 'standard',
     units: 'metric',

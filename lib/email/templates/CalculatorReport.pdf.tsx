@@ -61,23 +61,31 @@ async function launchBrowser() {
 export async function renderCalculatorReportPdf(props: ReportProps): Promise<Buffer> {
   const html = buildReportHtml(props);
   const launched = await launchBrowser();
-  const { browser } = launched;
 
   try {
     const viewport = { width: A4_WIDTH_PX, height: A4_HEIGHT_PX };
     let png: Uint8Array;
 
     if (launched.kind === 'playwright') {
-      const context = await browser.newContext({ viewport, deviceScaleFactor: DEVICE_SCALE });
+      const context = await launched.browser.newContext({ viewport, deviceScaleFactor: DEVICE_SCALE });
       const page = await context.newPage();
       await page.setContent(html, { waitUntil: 'networkidle' });
       await page.evaluate(() => document.fonts.ready);
       png = await page.screenshot({ type: 'png', fullPage: false, omitBackground: false });
     } else {
-      const page = await browser.newPage();
+      // puppeteer-core types aren't installed in dev (it's a Vercel-only
+      // runtime dep), so cast through unknown to keep typecheck clean.
+      const page = await (launched.browser as unknown as {
+        newPage: () => Promise<{
+          setViewport: (v: { width: number; height: number; deviceScaleFactor: number }) => Promise<void>;
+          setContent: (h: string, o: { waitUntil: string }) => Promise<void>;
+          evaluate: <T>(fn: () => T) => Promise<T>;
+          screenshot: (o: { type: 'png'; fullPage: boolean; omitBackground: boolean }) => Promise<Uint8Array>;
+        }>;
+      }).newPage();
       await page.setViewport({ ...viewport, deviceScaleFactor: DEVICE_SCALE });
       await page.setContent(html, { waitUntil: 'networkidle0' });
-      await page.evaluate(() => document.fonts.ready);
+      await page.evaluate(() => (document as unknown as { fonts: { ready: Promise<unknown> } }).fonts.ready);
       png = await page.screenshot({ type: 'png', fullPage: false, omitBackground: false });
     }
 
@@ -88,7 +96,7 @@ export async function renderCalculatorReportPdf(props: ReportProps): Promise<Buf
     const bytes = await pdfDoc.save();
     return Buffer.from(bytes);
   } finally {
-    await browser.close();
+    await launched.browser.close();
   }
 }
 
