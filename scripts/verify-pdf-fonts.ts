@@ -1,16 +1,18 @@
 /**
- * Verifies that the calculator PDF embeds the Poppins font family for
- * every weight used in the layout. This is the failure mode that caused
- * iOS PDFKit to fall back to Helvetica and shift the absolute layout.
+ * Verifies the calculator PDF. Since we now rasterize the report to a PNG
+ * and wrap it in a PDF (to dodge iOS PDFKit's broken text rendering), the
+ * checks are: the PDF has one A4 page, that page contains one image, and
+ * the image is large enough to be a real high-DPI render (not a thumbnail
+ * or fallback).
  *
- * Also writes the generated PDF to /tmp so you can AirDrop it to an iPhone
- * and inspect visually side-by-side with the laptop render.
+ * Also writes /tmp/verify-pdf-fonts.pdf so the same artifact can be
+ * AirDropped to an iPhone for visual comparison with desktop.
  *
  *   npm run verify:pdf
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { PDFDocument, PDFName, PDFDict, PDFArray, PDFRef } from 'pdf-lib';
+import { PDFDocument, PDFName, PDFDict, PDFRawStream } from 'pdf-lib';
 import { renderCalculatorReportPdf } from '../lib/email/templates/CalculatorReport.pdf';
 import type { ReportProps } from '../lib/email/templates/sections';
 
@@ -37,18 +39,26 @@ const SAMPLE: ReportProps = {
   },
 };
 
-const REQUIRED_WEIGHTS = ['ExtraLight', 'Medium', 'Bold', 'ExtraBold'];
+interface EmbeddedImage { width: number; height: number; bytes: number }
 
-function collectFontNames(pdf: PDFDocument): string[] {
-  const names = new Set<string>();
+function collectImages(pdf: PDFDocument): EmbeddedImage[] {
+  const images: EmbeddedImage[] = [];
   for (const [, obj] of pdf.context.enumerateIndirectObjects()) {
-    if (!(obj instanceof PDFDict)) continue;
-    const type = obj.lookup(PDFName.of('Type'));
-    if (!(type instanceof PDFName) || type.asString() !== '/Font') continue;
-    const base = obj.lookup(PDFName.of('BaseFont'));
-    if (base instanceof PDFName) names.add(base.asString());
+    if (!(obj instanceof PDFRawStream)) continue;
+    const dict = obj.dict;
+    const type    = dict.lookup(PDFName.of('Type'));
+    const subtype = dict.lookup(PDFName.of('Subtype'));
+    if (!(type    instanceof PDFName) || type.asString()    !== '/XObject') continue;
+    if (!(subtype instanceof PDFName) || subtype.asString() !== '/Image')   continue;
+    const w = dict.lookup(PDFName.of('Width'));
+    const h = dict.lookup(PDFName.of('Height'));
+    images.push({
+      width:  (w as { numberValue?: number })?.numberValue ?? 0,
+      height: (h as { numberValue?: number })?.numberValue ?? 0,
+      bytes:  obj.contents.length,
+    });
   }
-  return [...names];
+  return images;
 }
 
 function assert(cond: boolean, msg: string): void {
@@ -57,7 +67,7 @@ function assert(cond: boolean, msg: string): void {
 }
 
 (async () => {
-  console.log('Generating sample PDF (this takes ~5s for Chromium cold start)…\n');
+  console.log('Generating sample PDF (rasterized, ~5–10s)…\n');
   const t0 = Date.now();
   const pdfBytes = await renderCalculatorReportPdf(SAMPLE);
   console.log(`Generated ${pdfBytes.length.toLocaleString()} bytes in ${Date.now() - t0}ms\n`);
@@ -67,36 +77,41 @@ function assert(cond: boolean, msg: string): void {
   console.log(`Wrote ${outPath} — open it, AirDrop to iPhone, compare.\n`);
 
   const pdf = await PDFDocument.load(pdfBytes);
-  const fonts = collectFontNames(pdf);
-  console.log('Embedded font BaseFont entries:');
-  for (const n of fonts) console.log('  ', n);
+  const images = collectImages(pdf);
+  console.log('Embedded images:');
+  for (const i of images) {
+    console.log(`   ${i.width}×${i.height} px, ${i.bytes.toLocaleString()} bytes`);
+  }
   console.log();
 
-  assert(fonts.length > 0, 'PDF contains at least one embedded font');
-
-  for (const weight of REQUIRED_WEIGHTS) {
-    assert(
-      fonts.some(n => n.includes('Poppins') && n.includes(weight)),
-      `Poppins-${weight} is embedded (not substituted to a system font)`,
-    );
-  }
-
-  // PDF subsets are named "AAAAAA+Poppins-Bold" — the 6-letter prefix means
-  // Chromium subsetted the font. Subsetting is fine *as long as* every glyph
-  // we render is included. If any required weight is missing the prefix and
-  // shows as plain "Poppins-Bold", that often means the font was used by
-  // reference only and may not render in strict viewers.
-  const subsetted = fonts.filter(n => /^\/[A-Z]{6}\+Poppins/.test(n));
-  assert(subsetted.length >= REQUIRED_WEIGHTS.length,
-    `All ${REQUIRED_WEIGHTS.length} Poppins weights are subset-embedded`);
-
-  assert(pdf.getPageCount() === 1, 'PDF is exactly one page (A4)');
+  assert(pdf.getPageCount() === 1, 'PDF is exactly one page');
 
   const page = pdf.getPage(0);
   const { width, height } = page.getSize();
-  // A4 at 72dpi = 595.28 × 841.89 pt
   assert(Math.abs(width  - 595.28) < 1, `Page width matches A4 (got ${width.toFixed(2)})`);
   assert(Math.abs(height - 841.89) < 1, `Page height matches A4 (got ${height.toFixed(2)})`);
+
+  assert(images.length === 1, `Page contains exactly one rasterized image (found ${images.length})`);
+
+  if (images.length > 0) {
+    const img = images[0];
+    // 2x device scale × 794 px viewport = 1588 px wide. Allow generous slack
+    // for Chromium version differences.
+    assert(img.width  >= 1400, `Image width is at least 1400px (got ${img.width}) — confirms high-DPI render`);
+    assert(img.height >= 2000, `Image height is at least 2000px (got ${img.height}) — confirms full A4 capture`);
+    assert(img.bytes  >= 50_000, `Image payload is non-trivial (got ${img.bytes.toLocaleString()} bytes)`);
+  }
+
+  // No embedded fonts is expected for a rasterized PDF — that's the whole point.
+  // If we ever regress and Chromium's vector pipeline sneaks back in, fonts
+  // would reappear. So we assert their absence.
+  let fontCount = 0;
+  for (const [, obj] of pdf.context.enumerateIndirectObjects()) {
+    if (!(obj instanceof PDFDict)) continue;
+    const type = obj.lookup(PDFName.of('Type'));
+    if (type instanceof PDFName && type.asString() === '/Font') fontCount++;
+  }
+  assert(fontCount === 0, `No fonts embedded (rasterized output, got ${fontCount})`);
 
   console.log('\nDone.');
 })().catch(err => {
