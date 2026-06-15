@@ -105,7 +105,7 @@ export default function EmailModal({ isOpen, onClose, title, kind = 'pdf' }: Ema
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ event_type: 'form_submit', resource_title: title ?? null, resource_kind: kind, name, email, ...tracking }),
     }).catch(() => {});
-    fireConversionEvent('Lead', 'Subscribe', { content_name: title ?? kind, content_category: kind });
+    fireConversionEvent('Lead', 'Subscribe', 'generate_lead', { content_name: title ?? kind, content_category: kind });
 
     if (downloadWindow) {
       const url = res.status === 'fulfilled' ? res.value?.downloadUrl : null;

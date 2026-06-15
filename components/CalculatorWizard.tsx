@@ -331,7 +331,7 @@ export default function CalculatorWizard() {
                 });
 
                 submittedRef.current = true;
-                fireConversionEvent('CompleteRegistration', 'CompleteRegistration', {
+                fireConversionEvent('CompleteRegistration', 'CompleteRegistration', 'calculator_complete', {
                   content_name: 'Calculadora',
                   goal: form.goal,
                   calories: result.calories,
