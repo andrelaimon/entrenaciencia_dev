@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Mail, CheckCircle } from 'lucide-react';
+import { X, Mail, CheckCircle, FileText, Download } from 'lucide-react';
 import { getTrackingContext } from '@/lib/tracking';
 import { fireConversionEvent } from '@/lib/pixel';
 
@@ -174,7 +174,7 @@ export default function EmailModal({ isOpen, onClose, title, kind = 'pdf' }: Ema
                     background: CYAN,
                   }}
                 >
-                  <Mail size={26} color={NAVY} />
+                  {kind === 'pdf' ? <FileText size={26} color={NAVY} /> : <Mail size={26} color={NAVY} />}
                 </div>
               </div>
 
@@ -237,7 +237,7 @@ export default function EmailModal({ isOpen, onClose, title, kind = 'pdf' }: Ema
                     fontWeight: 800,
                   }}
                 >
-                  <Mail size={16} />
+                  {kind === 'pdf' ? <Download size={16} /> : <Mail size={16} />}
                   {copy.ctaLabel}
                 </button>
               </form>
