@@ -79,9 +79,35 @@ These power retargeting and lookalike audiences in Meta Ads Manager and TikTok A
 
 ---
 
-## Google Analytics
+## Google Analytics (GA4)
 
-Once `NEXT_PUBLIC_GA_ID` is set, GA4 tracks page views, sessions, and traffic source automatically.
+Once `NEXT_PUBLIC_GA_ID` is set, GA4 receives data in three layers:
+
+**Automatic (Enhanced Measurement):** page views, sessions, traffic source, scroll-depth (90%), outbound clicks, file downloads on real `.pdf` URLs, video engagement, site search.
+
+**Conversion events fired by our code** via `fireConversionEvent` (`lib/pixel.ts`), same triggers that drive Meta + TikTok:
+
+| Trigger | GA4 event | Params |
+|---|---|---|
+| EmailModal submit (PDF or course card) | `generate_lead` | `content_name`, `content_category` |
+| CourseModal submit (navbar) | `generate_lead` | `content_name`, `content_category` |
+| Calculator fully submitted | `calculator_complete` | `content_name`, `goal`, `calories` |
+
+Both are marked as **Key Events** in the GA4 UI so they appear in Conversion reports and can be used for Google Ads bid optimization.
+
+**Why GA4 in addition to Supabase?**
+
+Supabase is the **system of record** — every row, exact, forever, queryable via SQL. GA4 is the **analytics layer** — pre-built attribution, marketing integrations, fast exploration. They complement each other:
+
+- **Multi-touch attribution out of the box** — Supabase stores first/last-touch UTMs; GA4 runs data-driven, linear, time-decay, and position-based models without writing SQL.
+- **Audience segmentation in the UI** — build cohorts (e.g. "users who completed the calculator but didn't download a guide") visually instead of via SQL.
+- **Funnel & path exploration** — drag-and-drop in GA4 Explore vs. writing custom views in Supabase.
+- **Google Ads bid optimization** — Google can only optimize ad spend for conversions it knows about. Conversions imported from GA4 → Google Ads let smart bidding target real leads, not pageviews.
+- **Predictive metrics** — purchase / churn probability and demographics enrichment for free.
+- **Realtime monitoring + Looker Studio dashboards** — share with stakeholders without giving them DB access.
+- **Industry benchmarking** — comparison to similar fitness/health sites.
+
+GA4 limitations (handled by Supabase): aggregated/sampled data, max 14-month retention on free tier, no arbitrary SQL, can't join to your own tables. Anything requiring per-user history beyond what GA4 exposes — e.g. "show me all calculator submissions by this email, with the original UTM that brought them" — still has to come from Supabase.
 
 ---
 
