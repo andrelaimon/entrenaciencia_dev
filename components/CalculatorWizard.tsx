@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, ArrowRight, Loader2 } from 'lucide-react';
 import { getTrackingContext } from '@/lib/tracking';
 import { fireConversionEvent } from '@/lib/pixel';
 import {
@@ -1445,6 +1445,8 @@ function ConfirmationStep({ report }: {
     }
   }
 
+  const isLoading = dlState === 'loading';
+
   return (
     <motion.div {...stepMotion} style={cardStyle} className="p-10 md:p-14 text-center">
       <div
@@ -1455,13 +1457,15 @@ function ConfirmationStep({ report }: {
           border: '1px solid rgba(156,226,182,0.3)',
         }}
       >
-        <CheckCircle2 size={40} color="#9CE2B6" strokeWidth={2} />
+        {isLoading
+          ? <Loader2 size={40} color="#9CE2B6" strokeWidth={2} className="animate-spin" />
+          : <CheckCircle2 size={40} color="#9CE2B6" strokeWidth={2} />}
       </div>
       <h2 className="text-3xl md:text-4xl font-extrabold mb-4" style={{ color: '#ffffff', fontWeight: 800 }}>
-        Gracias.
+        {isLoading ? 'Generando tu reporte…' : 'Gracias.'}
       </h2>
       <p className="leading-relaxed max-w-md mx-auto mb-8" style={{ color: '#ffffff' }}>
-        {dlState === 'loading' && 'Preparando tu reporte…'}
+        {dlState === 'loading' && 'Espera unos segundos, tu reporte se empezará a descargar en un momento.'}
         {dlState === 'done'    && 'Tu reporte se está descargando.'}
         {dlState === 'error'   && 'Hubo un problema generando tu reporte.'}
       </p>
@@ -1474,15 +1478,17 @@ function ConfirmationStep({ report }: {
           {dlState === 'error' ? 'Reintentar descarga' : 'Descargar de nuevo'}
         </button>
       )}
-      <div>
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-sm font-bold transition"
-          style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}
-        >
-          Volver al inicio
-        </Link>
-      </div>
+      {!isLoading && (
+        <div>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-sm font-bold transition"
+            style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}
+          >
+            Volver al inicio
+          </Link>
+        </div>
+      )}
     </motion.div>
   );
 }
