@@ -359,8 +359,10 @@ export function buildReportHtml({ name, inputs, result }: ReportProps): string {
   <div class="cta-button"></div>
   <div class="t tc f-btn"  style="left:465.96px;top:761.64px;width:182.98px;">QUIERO INSCRIBIRME</div>
   <div class="t tc f-wait" style="left:465.96px;top:790.9px; width:182.98px;">Lista de espera abierta</div>
-  <!-- Clickable overlay covering the yellow button -->
-  <a href="https://www.entrenaciencia.com/#recursos"
+  <!-- Clickable overlay covering the yellow button. data-cta is read at PDF
+       render time so we can re-create a real link annotation in pdf-lib after
+       rasterization (the <a> itself doesn't survive the screenshot step). -->
+  <a href="https://www.entrenaciencia.com/#recursos" data-cta="curso"
      style="position:absolute;left:465.96px;top:740.41px;width:182.98px;height:62px;display:block;z-index:10;"></a>
 
   <!-- Legal note -->

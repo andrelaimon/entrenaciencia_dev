@@ -113,6 +113,30 @@ function assert(cond: boolean, msg: string): void {
   }
   assert(fontCount === 0, `No fonts embedded (rasterized output, got ${fontCount})`);
 
+  // The yellow "Inscríbete al Curso" CTA must remain clickable. Rasterization
+  // strips <a> semantics from the source HTML; we re-add a Link annotation in
+  // pdf-lib. Verify it actually got added and points at the right URL.
+  const linkUris: string[] = [];
+  for (const [, obj] of pdf.context.enumerateIndirectObjects()) {
+    if (!(obj instanceof PDFDict)) continue;
+    const subtype = obj.lookup(PDFName.of('Subtype'));
+    if (!(subtype instanceof PDFName) || subtype.asString() !== '/Link') continue;
+    const action = obj.lookup(PDFName.of('A'));
+    if (!(action instanceof PDFDict)) continue;
+    const uri = action.lookup(PDFName.of('URI'));
+    // PDFString surface varies across pdf-lib versions; coerce.
+    linkUris.push(String((uri as { decodeText?: () => string })?.decodeText?.() ?? uri ?? ''));
+  }
+  console.log('Link annotations:');
+  for (const u of linkUris) console.log('  ', u);
+  console.log();
+
+  assert(linkUris.length >= 1, 'PDF contains at least one Link annotation');
+  assert(
+    linkUris.some(u => u.includes('entrenaciencia.com') && u.includes('#recursos')),
+    'CTA link points to entrenaciencia.com#recursos',
+  );
+
   console.log('\nDone.');
 })().catch(err => {
   console.error('Verification script crashed:', err);
