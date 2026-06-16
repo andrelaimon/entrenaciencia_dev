@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import Script from "next/script";
 import Analytics from "@/components/Analytics";
+import { Analytics as VercelAnalytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -34,6 +35,7 @@ export default function RootLayout({
     <html lang="es" className={`${poppins.variable} h-full`}>
       <body className="min-h-full flex flex-col font-[family-name:var(--font-poppins)]">
         <Analytics />
+        <VercelAnalytics />
         {children}
 
         {/* Google Analytics — add NEXT_PUBLIC_GA_ID to env to activate */}
