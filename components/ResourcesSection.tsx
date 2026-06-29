@@ -29,9 +29,8 @@ const resources: Resource[] = [
     tag: 'Nutrición',
     title: 'Proteína con Ciencia',
     description: 'Qué es la proteína, para qué sirve, los mitos que la rodean, y cómo aplicar lo que la evidencia dice según tu objetivo y peso corporal.',
-    actionLabel: 'Próximamente',
+    actionLabel: 'Descargar',
     kind: 'pdf',
-    disabled: true,
   },
   {
     tag: 'Herramienta',

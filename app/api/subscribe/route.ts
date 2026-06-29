@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 
 const PDF_DOWNLOAD_URLS: Record<string, string> = {
   'Pierde Grasa con Ciencia': `${process.env.SUPABASE_URL}/storage/v1/object/public/guides/Entrena%20con%20Ciencia%20-%20Guia%20Perdida%20de%20Peso.pdf`,
-  'Proteína con Ciencia':     `${process.env.SUPABASE_URL}/storage/v1/object/public/guides/proteina-con-ciencia.pdf`,
+  'Proteína con Ciencia':     `${process.env.SUPABASE_URL}/storage/v1/object/public/guides/Entrena%20con%20Ciencia%20-%20Guia%20Proteina.pdf`,
 };
 
 function extractCountryCode(whatsapp: string | null): string | null {
