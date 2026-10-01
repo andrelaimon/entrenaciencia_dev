@@ -1,0 +1,51 @@
+:root{
+/* Radios — escala de squircle exagerado.
+   La carcasa del doble bisel es de 32px (--radius-shell); el nucleo se calcula
+   concentrico restando el padding de la carcasa, nunca a ojo. Los controles son
+   pildoras completas. */
+--radius-xs:4px;--radius-sm:10px;--radius-md:16px;--radius-lg:24px;--radius-xl:28px;--radius-shell:32px;--radius-pill:999px;
+--radius-card:var(--radius-shell);--radius-control:var(--radius-pill);--radius-chip:var(--radius-pill);
+
+/* Doble bisel (Doppelrand). Una superficie premium nunca se apoya plana sobre
+   el fondo: va dentro de una carcasa con su propio filo, y el nucleo lleva su
+   propio realce interior. El radio del nucleo es --radius-shell menos el
+   padding de la carcasa, para que las curvas queden concentricas. */
+--bezel-pad:6px;
+--bezel-core-radius:calc(var(--radius-shell) - var(--bezel-pad));
+--bezel-shell-light:rgba(11,20,37,.045);/* @kind color */
+--bezel-shell-dark:rgba(255,255,255,.055);/* @kind color */
+--bezel-ring-light:inset 0 0 0 1px rgba(11,20,37,.06);/* @kind other */
+--bezel-ring-dark:inset 0 0 0 1px rgba(255,255,255,.10);/* @kind other */
+--bezel-core-sheen-light:inset 0 1px 1px rgba(255,255,255,.9);/* @kind other */
+--bezel-core-sheen-dark:inset 0 1px 1px rgba(255,255,255,.15);/* @kind other */
+
+--border-w-hair:1px;--border-w:2px;--border-w-heavy:3px;
+
+/* Capas. No hay z-index arbitrarios: cada valor nombra un estrato del sistema.
+   Nada fuera de esta lista puede crear contexto de apilado propio. */
+--z-base:0;/* @kind other */
+--z-raised:1;/* @kind other */
+--z-grain:2;/* @kind other */
+--z-nav:20;/* @kind other */
+--z-overlay:40;/* @kind other */
+--z-tooltip:60;/* @kind other */
+
+/* Sombras ambientales, difusas y largas. El skill prohibe la caida dura y
+   oscura: nada de negro puro ni de radios cortos de alto contraste. Todas van
+   tenidas de navy y reparten la densidad en dos capas muy abiertas. */
+--shadow-sm:0 2px 6px -3px rgba(11,20,37,.05),0 10px 24px -12px rgba(11,20,37,.10);
+--shadow-md:0 4px 14px -6px rgba(11,20,37,.06),0 24px 56px -20px rgba(11,20,37,.14);
+--shadow-lg:0 8px 28px -10px rgba(11,20,37,.07),0 48px 96px -32px rgba(11,20,37,.20);
+--shadow-on-dark:0 1px 0 rgba(255,255,255,.07) inset,0 40px 90px -40px rgba(6,12,24,.55);
+--shadow-hairline:inset 0 0 0 1px var(--border-subtle);
+/* Filo superior: 1px de luz en el borde alto de toda superficie oscura elevada. */
+--edge-top:inset 0 1px 0 rgba(255,255,255,.09);/* @kind other */
+--edge-top-strong:inset 0 1px 0 rgba(255,255,255,.16);/* @kind other */
+
+--ring-focus:0 0 0 3px rgba(109,205,242,.42);
+--ring-evidence:0 0 0 3px rgba(255,195,0,.32);
+
+/* Gradientes de proteccion para texto sobre imagen o video. */
+--scrim-bottom:linear-gradient(to top,rgba(6,12,24,.94) 0%,rgba(6,12,24,.68) 34%,rgba(6,12,24,0) 100%);/* @kind other */
+--scrim-top:linear-gradient(to bottom,rgba(6,12,24,.86) 0%,rgba(6,12,24,0) 100%);/* @kind other */
+}

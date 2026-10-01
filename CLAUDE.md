@@ -6,7 +6,13 @@ Entrena con Ciencia — a Next.js 16 landing site (Spanish) with a calorie calcu
 
 The site captures leads via three flows:
 - **Resource modals** (PDF guides) → `/api/subscribe` → Supabase `leads`
-- **Course signup modal** with survey (navbar + Curso card) → `/api/subscribe` → Supabase `leads`
+- **Course signup modal** with survey (no longer linked from the homepage — see `/vsl` below) → `/api/subscribe` → Supabase `leads`
+
+The course now has its own sales landing at **`/vsl`**: a static site copied into `public/vsl/` from the separate
+`ecc-landing` project with `bash scripts/sync-vsl.sh [path-to-ecc-landing]` (default `../ecc-landing`).
+`next.config.ts` rewrites `/vsl` → `/vsl/index.html`. Every "Nuestro curso" button (navbar, mobile menu, hero) and the
+"Inscribirme" button on the Curso de Fundamentos card link there. Never edit `public/vsl/` by hand — change `ecc-landing`
+and re-run the sync script.
 - **Calculator wizard** → `/api/calculator-submit` → `calculator_submissions` + `leads`
 
 PDFs are not served from the site — leads receive resources by email manually (for now).

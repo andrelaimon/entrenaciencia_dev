@@ -1,0 +1,36 @@
+:root{
+/* Bricolage Grotesque para display: el eje wdth 76 sostiene covers de 2-5 palabras a 138px.
+   Instrument Sans para cuerpo e interfaz. JetBrains Mono para todo dato que venga del estudio. */
+--font-display:"Bricolage Grotesque","Instrument Sans",system-ui,sans-serif;
+--font-heading:"Instrument Sans",system-ui,sans-serif;
+--font-body:"Instrument Sans",system-ui,sans-serif;
+--font-mono:"JetBrains Mono",ui-monospace,monospace;
+
+/* Ejes variables. Aplicar con font-variation-settings. */
+--vf-cover:"wdth" 76,"opsz" 96;/* @kind other */
+--vf-display:"wdth" 84,"opsz" 72;/* @kind other */
+--vf-heading:"wdth" 92,"opsz" 24;/* @kind other */
+--vf-normal:"wdth" 100;/* @kind other */
+
+/* Escala. cover-* esta pensada para lienzos de 1080px (Reels, carrusel). */
+--text-cover-xl:138px;--text-cover:100px;--text-cover-sm:74px;
+--text-display:64px;--text-h1:46px;--text-h2:33px;--text-h3:24px;--text-h4:19px;
+--text-body-lg:18px;--text-body-md:16px;--text-body-sm:14px;--text-caption:13px;--text-micro:11px;--text-eyebrow:10px;
+
+--leading-cover:0.86;--leading-tight:1.02;--leading-snug:1.22;--leading-body:1.58;--leading-loose:1.72;
+
+--weight-regular:400;--weight-medium:500;--weight-semibold:600;--weight-bold:700;--weight-black:800;
+
+/* Tracking optico: cuanto mas grande el texto, mas cerrado. */
+--tracking-cover:-0.022em;--tracking-display:-0.018em;--tracking-tight:-0.012em;
+--tracking-normal:0;--tracking-wide:0.01em;--tracking-label:0.15em;--tracking-eyebrow:0.2em;--tracking-mono:-0.01em;
+
+/* Aliases semanticos */
+--type-cover:var(--weight-bold) var(--text-cover)/var(--leading-cover) var(--font-display);/* @kind other */
+--type-h1:var(--weight-bold) var(--text-h1)/var(--leading-tight) var(--font-display);/* @kind other */
+--type-h2:var(--weight-bold) var(--text-h2)/var(--leading-snug) var(--font-display);/* @kind other */
+--type-h3:var(--weight-semibold) var(--text-h3)/var(--leading-snug) var(--font-heading);/* @kind other */
+--type-body:var(--weight-regular) var(--text-body-md)/var(--leading-body) var(--font-body);/* @kind other */
+--type-label:var(--weight-medium) var(--text-micro)/1.2 var(--font-mono);/* @kind other */
+--type-eyebrow:var(--weight-medium) var(--text-eyebrow)/1.2 var(--font-mono);/* @kind other */
+}

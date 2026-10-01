@@ -1,0 +1,158 @@
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--surface-page);color:var(--text-body);font:var(--type-body);font-variation-settings:var(--vf-normal);-webkit-font-smoothing:antialiased;text-wrap:pretty}
+
+/* --- Titulares. h1 y h2 son display (Bricolage con eje wdth 84 y opsz 72);
+   h3 y h4 son interfaz (Instrument Sans con wdth 92). Son dos reglas separadas
+   a proposito: agrupar los cuatro dejaba a h1 con opsz 24, que es un eje optico
+   de texto de interfaz aplicado a un titular de 46px. --- */
+h1,h2{margin:0;color:var(--text-strong);font-family:var(--font-display);font-variation-settings:var(--vf-display)}
+h3,h4{margin:0;color:var(--text-strong);font-family:var(--font-heading);font-variation-settings:var(--vf-heading);letter-spacing:var(--tracking-tight)}
+h1{font-size:var(--text-h1);font-weight:var(--weight-bold);line-height:var(--leading-tight);letter-spacing:var(--tracking-display);text-wrap:balance}
+h2{font-size:var(--text-h2);font-weight:var(--weight-bold);line-height:var(--leading-snug);letter-spacing:var(--tracking-display);text-wrap:balance}
+h3{font-size:var(--text-h3);font-weight:var(--weight-semibold);line-height:var(--leading-snug)}
+h4{font-size:var(--text-h4);font-weight:var(--weight-semibold);line-height:var(--leading-snug)}
+p{margin:0}
+a{color:var(--text-link);text-decoration-color:color-mix(in oklab,var(--text-link) 35%,transparent);text-underline-offset:3px;transition:color var(--dur-fast) var(--ease-fluid),text-decoration-color var(--dur-fast) var(--ease-fluid)}
+a:hover{color:var(--text-link-hover);text-decoration-color:currentColor}
+::selection{background:var(--accent-evidence);color:var(--accent-evidence-ink)}
+:focus-visible{outline:none;box-shadow:var(--ring-focus)}
+
+/* --- Tipografia display: mezcla familia, peso y eje de ancho de una vez. --- */
+.ecc-cover{font-family:var(--font-display);font-variation-settings:var(--vf-cover);font-weight:var(--weight-bold);line-height:var(--leading-cover);letter-spacing:var(--tracking-cover);text-transform:uppercase}
+.ecc-display{font-family:var(--font-display);font-variation-settings:var(--vf-display);font-weight:var(--weight-bold);line-height:var(--leading-tight);letter-spacing:var(--tracking-display)}
+.ecc-label{font:var(--type-label);letter-spacing:var(--tracking-label);text-transform:uppercase}
+.ecc-num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+
+/* Eyebrow: rotulo microscopico en pildora que precede a todo h1/h2 de seccion.
+   Nunca va un titular suelto sin su eyebrow o su filete. */
+.ecc-eyebrow{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:var(--radius-pill);font:var(--type-eyebrow);letter-spacing:var(--tracking-eyebrow);text-transform:uppercase;background:var(--bezel-shell-light);box-shadow:var(--bezel-ring-light);color:var(--text-muted)}
+.ecc-eyebrow-on-dark{background:var(--surface-glass);box-shadow:var(--bezel-ring-dark);color:var(--text-on-dark-muted)}
+
+/* --- Doble bisel (Doppelrand) ---
+   Ninguna superficie se apoya plana sobre el fondo. La carcasa aporta el filo
+   exterior y el radio grande; el nucleo lleva su propio fondo, su realce
+   superior y un radio concentrico calculado, no estimado. */
+.ecc-bezel{padding:var(--bezel-pad);border-radius:var(--radius-shell);background:var(--bezel-shell-light);box-shadow:var(--bezel-ring-light);isolation:isolate}
+.ecc-bezel-on-dark{background:var(--bezel-shell-dark);box-shadow:var(--bezel-ring-dark)}
+.ecc-bezel-core{border-radius:var(--bezel-core-radius);background:var(--surface-card);box-shadow:var(--bezel-core-sheen-light),var(--shadow-sm);overflow:hidden}
+.ecc-bezel-core-on-dark{background:var(--surface-card-dark);box-shadow:var(--bezel-core-sheen-dark),var(--shadow-on-dark)}
+
+/* --- Atmosfera. Toda superficie navy grande lleva halo y trama; nunca navy plano.
+   El grano ya NO vive aqui: es una capa fija global (ver .ecc-grain-layer). --- */
+.ecc-grid{background-image:linear-gradient(var(--grid-line-dark) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line-dark) 1px,transparent 1px);background-size:34px 34px}
+.ecc-grid-light{background-image:linear-gradient(var(--grid-line-light) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line-light) 1px,transparent 1px);background-size:34px 34px}
+.ecc-atmos{position:relative;background:var(--ground-navy);isolation:isolate}
+.ecc-atmos::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;background-image:linear-gradient(var(--grid-line-dark) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line-dark) 1px,transparent 1px),var(--glow-cyan),var(--glow-gold);background-size:34px 34px,34px 34px,100% 100%,100% 100%}
+
+/* Grano: una sola capa fija sobre el viewport, sin eventos de puntero.
+   Adjuntarlo a contenedores que scrollean fuerza repintado continuo de GPU.
+   Se monta una vez por documento; ver ui_kits/_ds_fallback.js > __eccGrain(). */
+.ecc-grain-layer{position:fixed;inset:0;z-index:var(--z-grain);pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.42'/%3E%3C/svg%3E");mix-blend-mode:overlay;opacity:.22}
+
+/* Excepcion unica: los lienzos sociales (1080x1920, 1080x1350) se exportan como
+   imagen. Una capa fija del viewport no entra en esa exportacion, asi que ahi el
+   grano sigue siendo absoluto dentro del lienzo. No scrollea: no hay repintado. */
+.ecc-grain-canvas{position:relative}
+.ecc-grain-canvas::after{content:"";position:absolute;inset:0;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E");mix-blend-mode:overlay;opacity:.26}
+
+/* Regla de medida: filete corto que abre un bloque, como marca de instrumento. */
+.ecc-rule{display:block;width:56px;height:3px;background:var(--accent-evidence)}
+/* Resaltado de evidencia sobre fondo claro: relleno amarillo con tinta navy.
+   Sustituye al texto amarillo, que sobre blanco no alcanza contraste legible. */
+.ecc-mark{background:var(--evidence-fill);color:var(--evidence-fill-ink);padding:.06em .22em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+/* Version discreta: subrayado grueso amarillo bajo texto navy. */
+.ecc-underline{background:linear-gradient(to top,var(--evidence-fill) 0,var(--evidence-fill) .34em,transparent .34em);padding:0 .06em}
+
+/* --- Revelacion por scroll ---
+   Ningun elemento aparece estatico. Entra desde 64px abajo, desenfocado y a
+   opacidad 0, y resuelve en 900ms con la curva fluida. El desenfoque es
+   transitorio y termina en 0: no queda ningun filtro vivo sobre contenido que
+   scrollea. Lo dispara un IntersectionObserver, nunca un listener de scroll.
+
+   El estado oculto cuelga de [data-ecc-motion], que pone el runtime al arrancar.
+   Sin JS, con JS caido o con el runtime aun sin montar, el contenido se ve:
+   la animacion es una mejora, nunca un requisito para leer la pagina. */
+[data-ecc-motion] .ecc-reveal{opacity:0;transform:translate3d(0,64px,0);filter:blur(12px);will-change:transform,opacity}
+.ecc-reveal{transition:opacity var(--dur-reveal) var(--ease-fluid),transform var(--dur-reveal) var(--ease-fluid),filter var(--dur-reveal) var(--ease-fluid)}
+[data-ecc-motion] .ecc-reveal.is-in{opacity:1;transform:none;filter:blur(0)}
+/* Terminada la entrada, se suelta la pista de composicion para no retener capas. */
+.ecc-reveal.is-done{will-change:auto;filter:none}
+.ecc-reveal-1{transition-delay:var(--stagger-1)}
+.ecc-reveal-2{transition-delay:var(--stagger-2)}
+.ecc-reveal-3{transition-delay:var(--stagger-3)}
+.ecc-reveal-4{transition-delay:var(--stagger-4)}
+.ecc-reveal-5{transition-delay:var(--stagger-5)}
+
+/* --- Split asimetrico ---
+   Dos columnas de peso distinto en escritorio. Por debajo de 768px pasa a
+   columna unica a ancho completo y el margen lateral baja a 16px, que es la
+   regla universal de colapso: ninguna asimetria sobrevive al movil. */
+.ecc-split{display:grid;grid-template-columns:1.12fr .88fr;gap:var(--space-16);align-items:center}
+.ecc-split-form{grid-template-columns:1fr 440px;gap:var(--space-20)}
+.ecc-pad{padding-left:var(--space-8);padding-right:var(--space-8)}
+/* Columnas del pie: una marca ancha y tres listas. En movil se apilan en dos. */
+.ecc-cols{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:var(--space-12)}
+@media (max-width:768px){
+  .ecc-split,.ecc-split-form{grid-template-columns:1fr;gap:var(--space-10)}
+  .ecc-cols{grid-template-columns:1fr 1fr;gap:var(--space-10)}
+  .ecc-pad{padding-left:var(--space-4);padding-right:var(--space-4)}
+}
+
+/* --- Isla flotante: la navegacion no se pega al borde superior. --- */
+.ecc-island{position:sticky;top:var(--space-6);z-index:var(--z-nav);width:max-content;margin:var(--space-6) auto 0;border-radius:var(--radius-pill);background:var(--surface-island);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);box-shadow:var(--bezel-ring-dark),var(--shadow-lg);transition:var(--transition-surface)}
+
+/* Por debajo de 768px la isla deja de ser de ancho-contenido: se cine a los
+   margenes y la navegacion en linea desaparece. Para eso existe la
+   hamburguesa; mantenerla en linea desbordaba el viewport. */
+.ecc-island-nav{display:flex;gap:var(--space-6)}
+/* La hamburguesa esta en todos los tamanos: el menu a pantalla completa es
+   parte de la isla, no un recurso solo para movil. Lo que desaparece en
+   movil es la navegacion en linea y el CTA, que ahi no caben. */
+.ecc-island-burger{display:inline-flex}
+@media (max-width:768px){
+  .ecc-island{width:auto;margin-left:var(--space-4);margin-right:var(--space-4)}
+  .ecc-island-nav{display:none}
+  .ecc-island-cta{display:none}
+}
+
+/* Hamburguesa que se transforma en X: las barras rotan y se trasladan,
+   no desaparecen. */
+.ecc-burger{position:relative;width:20px;height:14px;flex-shrink:0}
+.ecc-burger span{position:absolute;left:0;width:100%;height:1.5px;border-radius:2px;background:currentColor;transition:transform var(--dur-base) var(--ease-fluid),opacity var(--dur-fast) var(--ease-fluid)}
+.ecc-burger span:nth-child(1){top:0}
+.ecc-burger span:nth-child(2){top:50%;transform:translateY(-50%)}
+.ecc-burger span:nth-child(3){bottom:0}
+.ecc-burger.is-open span:nth-child(1){transform:translateY(6.25px) rotate(45deg)}
+.ecc-burger.is-open span:nth-child(2){opacity:0}
+.ecc-burger.is-open span:nth-child(3){transform:translateY(-6.25px) rotate(-45deg)}
+
+.ecc-island.is-above{z-index:var(--z-tooltip)}
+
+/* Menu a pantalla completa con vidrio pesado. Es fixed, asi que el blur no
+   toca contenido que scrollea. */
+.ecc-overlay{position:fixed;inset:0;z-index:var(--z-overlay);background:var(--surface-overlay);backdrop-filter:blur(40px) saturate(140%);-webkit-backdrop-filter:blur(40px) saturate(140%);transition:opacity var(--dur-base) var(--ease-fluid)}
+/* Los enlaces del menu suben desde una caja invisible, escalonados. */
+.ecc-mask-item{opacity:0;transform:translate3d(0,48px,0);transition:opacity var(--dur-slow) var(--ease-fluid),transform var(--dur-slow) var(--ease-fluid)}
+.ecc-overlay.is-open .ecc-mask-item{opacity:1;transform:none}
+
+/* --- Preferencia de movimiento reducido: se conserva el destino, se quita el viaje. --- */
+@media (prefers-reduced-motion:reduce){
+  .ecc-reveal,.ecc-mask-item{opacity:1;transform:none;filter:none;transition:none}
+  .ecc-burger span{transition:none}
+  *{transition-duration:1ms!important;animation-duration:1ms!important}
+}
+
+/* --- Bento asimetrico ---
+   Parrilla de 12 columnas con piezas de tamano distinto: rompe la monotonia de
+   la rejilla simetrica de 3 columnas. Por debajo de 768px toda asimetria se
+   desarma a una sola columna: los spans se resetean y el solapamiento
+   desaparece, porque en tactil compite con el area de toque. */
+.ecc-bento{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:var(--space-6);align-items:stretch}
+.ecc-bento-feature{grid-column:span 7;grid-row:span 2}
+.ecc-bento-wide{grid-column:span 5}
+.ecc-bento-third{grid-column:span 4}
+.ecc-bento-half{grid-column:span 6}
+@media (max-width:768px){
+  .ecc-bento{grid-template-columns:1fr;gap:var(--space-6)}
+  .ecc-bento-feature,.ecc-bento-wide,.ecc-bento-third,.ecc-bento-half{grid-column:span 1;grid-row:auto}
+}
