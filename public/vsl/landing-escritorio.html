@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Entrena con Ciencia — Escritorio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>/* Vista de ejemplo: visible en el servidor local (localhost) o con ?ejemplo=1; nunca en el dominio publicado. ?ejemplo=0 la apaga. */(function(){var q=location.search,h=location.hostname,local=(h==="localhost"||h==="127.0.0.1"||h==="");if(!/[?&]ejemplo=0/.test(q)&&(local||/[?&]ejemplo=1/.test(q)))document.documentElement.classList.add("ecc-ejemplo");})();</script>
+<script>/* Temas de color: sin parámetro = actual (celeste tornasol) · ?tema=original = branding entrenaciencia.com · ?tema=anterior = antes de cambiar los fondos */(function(){var m=location.search.match(/[?&]tema=(original|anterior|actual)/);var t=m?m[1]:"original";if(t!=="anterior")document.documentElement.classList.add("tema-"+t);})();</script>
+<script>/* Servidor local: muestra la barra de edición del prototipo */if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname))document.documentElement.classList.add("ecc-local");</script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/entrena-con-ciencia-design-system-85805814-5397-4ced-bdaf-ffbc937c9a08/tokens/fonts.css">
+  <link rel="stylesheet" href="_ds/entrena-con-ciencia-design-system-85805814-5397-4ced-bdaf-ffbc937c9a08/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/entrena-con-ciencia-design-system-85805814-5397-4ced-bdaf-ffbc937c9a08/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/entrena-con-ciencia-design-system-85805814-5397-4ced-bdaf-ffbc937c9a08/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/entrena-con-ciencia-design-system-85805814-5397-4ced-bdaf-ffbc937c9a08/tokens/shape.css">
+  <link rel="stylesheet" href="_ds/entrena-con-ciencia-design-system-85805814-5397-4ced-bdaf-ffbc937c9a08/tokens/motion.css">
+  <link rel="stylesheet" href="_ds/entrena-con-ciencia-design-system-85805814-5397-4ced-bdaf-ffbc937c9a08/tokens/base.css">
+  <link rel="stylesheet" href="_ds/entrena-con-ciencia-design-system-85805814-5397-4ced-bdaf-ffbc937c9a08/styles.css">
+  <script src="_ds/entrena-con-ciencia-design-system-85805814-5397-4ced-bdaf-ffbc937c9a08/_ds_bundle.js"></script>
+  <link rel="stylesheet" href="vendor/phosphor/fill/style.css">
+  <link rel="stylesheet" href="vendor/phosphor/light/style.css">
+  <style>
+    @font-face{font-family:"Phosphor-Fill";src:url("vendor/phosphor/fill/Phosphor-Fill.woff2") format("woff2");font-weight:normal;font-style:normal;font-display:block}
+    @font-face{font-family:"Phosphor-Light";src:url("vendor/phosphor/light/Phosphor-Light.woff2") format("woff2");font-weight:normal;font-style:normal;font-display:block}
+  </style>
+  <script src="./image-slot.js"></script>
+  <style>
+    a{color:var(--cyan-600);text-decoration:none}
+    a:hover{color:var(--navy-800)}
+    .ecc-cta{display:inline-flex;align-items:center;justify-content:center;gap:14px;min-height:56px;padding:14px 8px 14px 28px;border-radius:var(--radius-pill);background:var(--gold-400);color:var(--navy-900);font-family:var(--font-body);font-size:var(--text-body-md);font-weight:700;letter-spacing:.04em;line-height:1.25;text-decoration:none;transition:background var(--dur-fast) var(--ease-fluid),transform var(--dur-fast) var(--ease-fluid)}
+    .ecc-cta:hover{background:var(--gold-500);color:var(--navy-900)}
+    .ecc-cta:active{transform:scale(.98)}
+    .ecc-cta-ico{flex:none;width:34px;height:34px;border-radius:var(--radius-pill);background:rgba(6,12,24,.13);display:grid;place-items:center;transition:transform var(--dur-fast) var(--ease-fluid)}
+    .ecc-cta:hover .ecc-cta-ico{transform:translate(2px,-2px) scale(1.05)}
+    .ecc-thumbs{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--space-2)}
+    .ecc-noscroll{scrollbar-width:none;-ms-overflow-style:none}
+    .ecc-noscroll::-webkit-scrollbar{display:none}
+    .ecc-trust{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-3) var(--space-5)}
+    .ecc-prose{max-width:64ch;display:flex;flex-direction:column;gap:var(--space-5)}
+    .ecc-stats{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)}
+    .ecc-marquee-shell{width:100%;max-width:var(--container-max);margin:0 auto}
+    .ecc-marquee{position:relative;width:100%;padding-bottom:var(--space-5)}
+    .ecc-marquee-head{display:flex;align-items:center;justify-content:center;gap:var(--space-4);padding:var(--space-5) var(--space-4) var(--space-4)}
+    .ecc-marquee-head span{font-family:var(--font-mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan-300);white-space:nowrap}
+    .ecc-marquee-head i{flex:none;height:1px;width:min(140px,14vw);background:linear-gradient(90deg,rgba(109,205,242,0),rgba(109,205,242,.4))}
+    .ecc-marquee-head i:last-child{background:linear-gradient(270deg,rgba(109,205,242,0),rgba(109,205,242,.4))}
+    .ecc-marquee-viewport{position:relative;overflow:hidden}
+    .ecc-marquee-viewport::after{right:0;border-radius:0 var(--bezel-core-radius) var(--bezel-core-radius) 0;background:linear-gradient(270deg,var(--surface-card-dark) 18%,rgba(23,44,80,0))}
+    .ecc-marquee-viewport::before{left:0;border-radius:var(--bezel-core-radius) 0 0 var(--bezel-core-radius);background:linear-gradient(90deg,var(--surface-card-dark) 18%,rgba(23,44,80,0))}
+    .ecc-marquee-viewport::after{right:0;border-radius:0 var(--bezel-core-radius) var(--bezel-core-radius) 0;background:linear-gradient(270deg,var(--surface-card-dark) 18%,rgba(23,44,80,0))}
+    .ecc-marquee-track{display:flex;align-items:center;width:max-content;animation:ecc-slide 38s linear infinite}
+    .ecc-marquee-set{flex:none;display:flex;align-items:center;gap:var(--space-5);padding-right:var(--space-5)}
+    .ecc-marquee:hover .ecc-marquee-track{animation-play-state:paused}
+    .ecc-marquee-item{flex:none;width:178px;height:74px;position:relative;border:1px solid var(--border-on-dark);border-radius:var(--radius-md);background:var(--navy-900);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);overflow:hidden}
+    @keyframes ecc-slide{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+    @media (prefers-reduced-motion:reduce){.ecc-marquee-track{animation:none}}
+    @media (max-width:767px){
+      .ecc-cta{width:100%;max-width:440px}
+      .ecc-thumbs{grid-template-columns:repeat(3,1fr)}
+      .ecc-stats{grid-template-columns:1fr}
+    }
+  </style>
+  <link rel="stylesheet" href="_ds/entrena-con-ciencia-design-system-85805814-5397-4ced-bdaf-ffbc937c9a08/tokens/brand-entrenaciencia.css?v=37">
+  <style>
+    /* v13 · Separadores: el hexágono va como elemento propio entre secciones (div.ecc-separador); se apaga el de CSS para no duplicarlo. */
+    html body section[data-screen-label]:not(#g1):not(#g2):not(#g3):not(#g4):not(#g5):not(#g6):not(#g7):not(#g8):not(#g9):not(#g10):not(#g11):not(#g12):not(#g13):not(#g14):not(#g15):not(#g16)::after{display:none!important}
+    /* Barra superior: logo a la izquierda; contador y 40% OFF juntos, centrados en la página */
+    @media (min-width:769px){ html body .ecc-island:not(#g1):not(#g2):not(#g3):not(#g4):not(#g5):not(#g6):not(#g7):not(#g8):not(#g9):not(#g10):not(#g11):not(#g12):not(#g13):not(#g14):not(#g15):not(#g16) > div{display:grid!important;grid-template-columns:1fr auto 1fr!important;align-items:center!important;justify-content:stretch!important} html body .ecc-island:not(#g1):not(#g2):not(#g3):not(#g4):not(#g5):not(#g6):not(#g7):not(#g8):not(#g9):not(#g10):not(#g11):not(#g12):not(#g13):not(#g14):not(#g15):not(#g16) > div > .sc-host-x{justify-self:start} }
+    /* Rótulos de sección un punto más grandes que el cuerpo del texto */
+    html body .ecc-eyebrow:not(#g1):not(#g2):not(#g3):not(#g4):not(#g5):not(#g6):not(#g7):not(#g8):not(#g9):not(#g10):not(#g11):not(#g12):not(#g13):not(#g14):not(#g15):not(#g16){font-size:18px!important;letter-spacing:.14em!important}
+    /* Rótulos de sección sin la rayita inicial */
+    html body .ecc-eyebrow:not(#g1):not(#g2):not(#g3):not(#g4):not(#g5):not(#g6):not(#g7):not(#g8):not(#g9):not(#g10):not(#g11):not(#g12):not(#g13):not(#g14):not(#g15):not(#g16)::before{display:none!important;content:none!important}
+    /* Fondo más blanco y texto con más contraste (tema original) */
+    html.tema-original body div[style*="surface-page"]:not(#g1):not(#g2):not(#g3):not(#g4):not(#g5):not(#g6):not(#g7):not(#g8):not(#g9):not(#g10):not(#g11):not(#g12):not(#g13):not(#g14):not(#g15):not(#g16), html.tema-original body .m-shell:not(#g1):not(#g2):not(#g3):not(#g4):not(#g5):not(#g6):not(#g7):not(#g8):not(#g9):not(#g10):not(#g11):not(#g12):not(#g13):not(#g14):not(#g15):not(#g16){background-image:radial-gradient(60% 4% at 90% 3%,rgba(35,211,255,.07),rgba(0,0,0,0) 70%),radial-gradient(55% 5% at 6% 16%,rgba(40,95,185,.06),rgba(0,0,0,0) 70%),radial-gradient(60% 5% at 94% 40%,rgba(60,190,230,.06),rgba(0,0,0,0) 70%),radial-gradient(55% 5% at 4% 64%,rgba(40,95,185,.05),rgba(0,0,0,0) 70%),radial-gradient(60% 5% at 92% 86%,rgba(35,211,255,.06),rgba(0,0,0,0) 70%),linear-gradient(180deg,#F7FBFE 0%,#F3F8FC 30%,#F5FAFB 55%,#F2F7FC 80%,#F6FAFD 100%)!important}
+    html.tema-original body section[data-screen-label]:not(#g1):not(#g2):not(#g3):not(#g4):not(#g5):not(#g6):not(#g7):not(#g8):not(#g9):not(#g10):not(#g11):not(#g12):not(#g13):not(#g14):not(#g15):not(#g16){--text-body:#2A3F4F;--text-muted:#44596A;color:#2A3F4F}
+    html.tema-original body section[data-screen-label]:not(#g1):not(#g2):not(#g3):not(#g4):not(#g5):not(#g6):not(#g7):not(#g8):not(#g9):not(#g10):not(#g11):not(#g12):not(#g13):not(#g14):not(#g15):not(#g16) p[style*="text-muted"]{color:#44596A!important}
+  </style>
+</helmet>
+
+<div style="background:var(--surface-page);color:var(--text-body);overflow-x:hidden">
+
+    <header class="ecc-island" style="position:sticky;top:0;z-index:20;margin-top:14px;padding:0 var(--space-5);width:fit-content;max-width:calc(100% - 32px);margin-left:auto;margin-right:auto">
+      <div style="min-height:66px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:var(--space-2) var(--space-5);padding:var(--space-2) 0">
+        <x-import component-from-global-scope="EntrenaConCienciaDesignSystem_858058.Logo" variant="horizontal" theme="dark" size="{{ 34 }}" src="assets/isotipo-ecc.png" hint-size="170px,36px"></x-import>
+        <span style="width:1px;height:34px;background:var(--border-on-dark)"></span>
+        <div class="ecc-nav-timer" style="justify-self:center;display:flex;align-items:center;gap:var(--space-5)">
+          <span style="display:flex;flex-direction:column;gap:6px">
+            <span class="ecc-num" style="font-family:var(--font-body);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-400);white-space:nowrap">Oferta de lanzamiento</span>
+            <span style="display:flex;align-items:flex-start;gap:10px">
+              <span style="font-family:var(--font-body);font-size:11px;font-weight:500;letter-spacing:.16em;line-height:40px;text-transform:uppercase;color:var(--text-on-dark);white-space:nowrap">Termina en</span>
+              <span role="timer" aria-label="Tiempo restante de la oferta" style="display:flex;align-items:flex-start;gap:6px"><span style="display:flex;flex-direction:column;align-items:center;gap:3px"><span class="ecc-num" style="min-width:48px;height:40px;padding:0 8px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.3);font-family:var(--font-display);font-size:24px;font-weight:700;line-height:1;color:var(--text-on-dark);font-variant-numeric:tabular-nums;white-space:nowrap">{{ timerHrs }}</span><span style="font-family:var(--font-body);font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text-on-dark-muted)">Hrs</span></span><span aria-hidden="true" style="font-family:var(--font-display);font-size:22px;font-weight:700;line-height:40px;color:var(--text-on-dark-muted)">:</span><span style="display:flex;flex-direction:column;align-items:center;gap:3px"><span class="ecc-num" style="min-width:48px;height:40px;padding:0 8px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.3);font-family:var(--font-display);font-size:24px;font-weight:700;line-height:1;color:var(--text-on-dark);font-variant-numeric:tabular-nums;white-space:nowrap">{{ timerMin }}</span><span style="font-family:var(--font-body);font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text-on-dark-muted)">Min</span></span><span aria-hidden="true" style="font-family:var(--font-display);font-size:22px;font-weight:700;line-height:40px;color:var(--text-on-dark-muted)">:</span><span style="display:flex;flex-direction:column;align-items:center;gap:3px"><span class="ecc-num" style="min-width:48px;height:40px;padding:0 8px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.3);font-family:var(--font-display);font-size:24px;font-weight:700;line-height:1;color:var(--text-on-dark);font-variant-numeric:tabular-nums;white-space:nowrap">{{ timerSeg }}</span><span style="font-family:var(--font-body);font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text-on-dark-muted)">Seg</span></span></span>
+            </span>
+          </span>
+          <span class="ecc-num" style="display:inline-flex;align-items:center;height:40px;padding:0 18px;border-radius:8px;background:var(--gold-400);box-shadow:0 8px 24px rgba(255,195,0,.22);font-family:var(--font-body);font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--navy-900);white-space:nowrap">40% OFF</span>
+        </div>
+      </div>
+    </header>
+  <section class="ecc-atmos" data-screen-label="01 Arriba del pliegue" style="padding-bottom:var(--gap-section)">
+
+    <div class="ecc-split ecc-pad" style="max-width:var(--container-max);margin:0 auto;padding-top:var(--space-10);align-items:start">
+      <div class="ecc-reveal" style="min-width:0;display:flex;flex-direction:column;gap:var(--space-5)">
+        <div class="ecc-bezel ecc-bezel-on-dark">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" data-no-video="" style="overflow:hidden;cursor:pointer;position:relative;aspect-ratio:4/3;color:var(--text-on-dark-muted)">
+            <!-- MAQUETA: portada provisional del VSL; reemplazar por el reproductor real --><img src="assets/vsl-portada.jpg" alt="Dr. Gonzalo León presenta el programa" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 35%"><span class="ecc-vsl-play" aria-hidden="true"><i class="ph-fill ph-play"></i></span><span class="ecc-vsl-tag">Mira el video</span>
+          </div>
+        </div>
+        <!-- NUEVO (marco de landing): testimonios del hero en carrusel (cambian cada 5 s hacia la izquierda); el texto entre [corchetes] lo llena el equipo con testimonios reales; los de ejemplo (.ecc-ej) solo se ven con ?ejemplo=1 y no se publican -->
+        <div class="ecc-bezel ecc-bezel-on-dark">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" style="padding:0;overflow:hidden" aria-roledescription="carrusel" aria-label="Testimonios">
+            <div style="display:flex;transition:transform .7s cubic-bezier(.32,.72,0,1);transform:{{ testiTrack }}">
+              <div style="flex:0 0 100%;min-width:0;box-sizing:border-box;padding:var(--space-4) var(--space-5);display:flex;align-items:center;gap:var(--space-4)">
+            <div style="position:relative;flex:none;width:52px;height:52px;border-radius:999px;overflow:hidden">
+              <image-slot id="hero-testimonio" shape="circle" placeholder="Foto"></image-slot><span class="ecc-ej ecc-ej-avatar">MF</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+              <p class="ecc-ph" style="font-size:14px;line-height:1.5;color:var(--text-on-dark)">[«Testimonio corto y concreto: qué cambió y en cuánto tiempo»]</p><p class="ecc-ej" style="font-size:14px;line-height:1.5;color:var(--text-on-dark)">«Llevo 11 semanas entrenando 3 veces por semana. Es la primera vez que no lo dejo.» <span class="ecc-ej-sello">Ejemplo</span></p>
+              <p class="ecc-ph" style="font-size:12px;line-height:1.4;color:var(--text-on-dark-faint)">[Nombre, edad, ciudad — enlace a la reseña original]</p><p class="ecc-ej" style="font-size:12px;line-height:1.4;color:var(--text-on-dark-faint)">Mariana F., 38 · Lima</p>
+            </div></div>
+              <div style="flex:0 0 100%;min-width:0;box-sizing:border-box;padding:var(--space-4) var(--space-5);display:flex;align-items:center;gap:var(--space-4)"><div style="position:relative;flex:none;width:52px;height:52px;border-radius:999px;overflow:hidden"><image-slot id="hero-testimonio-2" shape="circle" placeholder="Foto"></image-slot><span class="ecc-ej ecc-ej-avatar">CR</span></div><div style="display:flex;flex-direction:column;gap:4px;min-width:0"><p class="ecc-ph" style="font-size:14px;line-height:1.5;color:var(--text-on-dark)">[«Testimonio corto y concreto: qué cambió y en cuánto tiempo»]</p><p class="ecc-ej" style="font-size:14px;line-height:1.5;color:var(--text-on-dark)">«Pensé que no tenía tiempo. Con 3 sesiones de 45 minutos por semana ya llevo 2 meses sin parar.» <span class="ecc-ej-sello">Ejemplo</span></p><p class="ecc-ph" style="font-size:12px;line-height:1.4;color:var(--text-on-dark-faint)">[Nombre, edad, ciudad — enlace a la reseña original]</p><p class="ecc-ej" style="font-size:12px;line-height:1.4;color:var(--text-on-dark-faint)">Carlos R., 42 · Bogotá</p></div></div>
+              <div style="flex:0 0 100%;min-width:0;box-sizing:border-box;padding:var(--space-4) var(--space-5);display:flex;align-items:center;gap:var(--space-4)"><div style="position:relative;flex:none;width:52px;height:52px;border-radius:999px;overflow:hidden"><image-slot id="hero-testimonio-3" shape="circle" placeholder="Foto"></image-slot><span class="ecc-ej ecc-ej-avatar">LM</span></div><div style="display:flex;flex-direction:column;gap:4px;min-width:0"><p class="ecc-ph" style="font-size:14px;line-height:1.5;color:var(--text-on-dark)">[«Testimonio corto y concreto: qué cambió y en cuánto tiempo»]</p><p class="ecc-ej" style="font-size:14px;line-height:1.5;color:var(--text-on-dark)">«No dejé de comer lo que me gusta. Aprendí a organizarme y por fin veo cambios.» <span class="ecc-ej-sello">Ejemplo</span></p><p class="ecc-ph" style="font-size:12px;line-height:1.4;color:var(--text-on-dark-faint)">[Nombre, edad, ciudad — enlace a la reseña original]</p><p class="ecc-ej" style="font-size:12px;line-height:1.4;color:var(--text-on-dark-faint)">Lucía M., 31 · Arequipa</p></div></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-4)">
+            <span class="ecc-label" style="color:var(--cyan-300)">Que incluye el programa</span>
+          </div>
+          <div id="ecc-carrusel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--space-3);align-items:stretch">
+            <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0">
+              <div class="ecc-bezel-core ecc-bezel-core-on-dark" style="height:100%;display:flex;flex-direction:column">
+                <div data-no-video="" style="padding:var(--space-4) var(--space-4) 0">
+                  <div style="display:flex;color:var(--cyan-300)"><i class="ph-light ph-brain" style="font-size:30px"></i></div>
+                </div>
+                <div style="padding:var(--space-3) var(--space-4) var(--space-4);display:flex;flex-direction:column;gap:6px">
+                  <div style="display:flex;align-items:center;gap:var(--space-3)"><h4 style="color:var(--text-on-dark);font-size:var(--text-body-sm)">Curso de Neurociencia del Cambio</h4></div>
+                </div>
+              </div>
+            </div>
+            <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0">
+              <div class="ecc-bezel-core ecc-bezel-core-on-dark" style="height:100%;display:flex;flex-direction:column">
+                <div data-no-video="" style="padding:var(--space-4) var(--space-4) 0">
+                  <div style="display:flex;color:var(--cyan-300)"><i class="ph-light ph-microscope" style="font-size:30px"></i></div>
+                </div>
+                <div style="padding:var(--space-3) var(--space-4) var(--space-4);display:flex;flex-direction:column;gap:6px">
+                  <div style="display:flex;align-items:center;gap:var(--space-3)"><h4 style="color:var(--text-on-dark);font-size:var(--text-body-sm)">Curso de Fundamentos de Nutricion y Entrenamiento</h4></div>
+                </div>
+              </div>
+            </div>
+            <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0">
+              <div class="ecc-bezel-core ecc-bezel-core-on-dark" style="height:100%;display:flex;flex-direction:column">
+                <div data-no-video="" style="padding:var(--space-4) var(--space-4) 0">
+                  <div style="display:flex;color:var(--cyan-300)"><i class="ph-light ph-list-checks" style="font-size:30px"></i></div>
+                </div>
+                <div style="padding:var(--space-3) var(--space-4) var(--space-4);display:flex;flex-direction:column;gap:6px">
+                  <div style="display:flex;align-items:center;gap:var(--space-3)"><h4 style="color:var(--text-on-dark);font-size:var(--text-body-sm)">Protocolos para Dias Dificiles</h4></div>
+                </div>
+              </div>
+            </div>
+            <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0">
+              <div class="ecc-bezel-core ecc-bezel-core-on-dark" style="height:100%;display:flex;flex-direction:column">
+                <div data-no-video="" style="padding:var(--space-4) var(--space-4) 0">
+                  <div style="display:flex;color:var(--cyan-300)"><i class="ph-light ph-barbell" style="font-size:30px"></i></div>
+                </div>
+                <div style="padding:var(--space-3) var(--space-4) var(--space-4);display:flex;flex-direction:column;gap:6px">
+                  <div style="display:flex;align-items:center;gap:var(--space-3)"><h4 style="color:var(--text-on-dark);font-size:var(--text-body-sm)">Planes de Entrenamiento</h4></div>
+                </div>
+              </div>
+            </div>
+            <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0">
+              <div class="ecc-bezel-core ecc-bezel-core-on-dark" style="height:100%;display:flex;flex-direction:column">
+                <div data-no-video="" style="padding:var(--space-4) var(--space-4) 0">
+                  <div style="display:flex;color:var(--cyan-300)"><i class="ph-light ph-device-mobile" style="font-size:30px"></i></div>
+                </div>
+                <div style="padding:var(--space-3) var(--space-4) var(--space-4);display:flex;flex-direction:column;gap:6px">
+                  <div style="display:flex;align-items:center;gap:var(--space-3)"><h4 style="color:var(--text-on-dark);font-size:var(--text-body-sm)">Aplicacion para tu Celular</h4></div>
+                </div>
+              </div>
+            </div>
+            <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0">
+              <div class="ecc-bezel-core ecc-bezel-core-on-dark" style="height:100%;display:flex;flex-direction:column">
+                <div data-no-video="" style="padding:var(--space-4) var(--space-4) 0">
+                  <div style="display:flex;color:var(--cyan-300)"><i class="ph-light ph-users-three" style="font-size:30px"></i></div>
+                </div>
+                <div style="padding:var(--space-3) var(--space-4) var(--space-4);display:flex;flex-direction:column;gap:6px">
+                  <div style="display:flex;align-items:center;gap:var(--space-3)"><h4 style="color:var(--text-on-dark);font-size:var(--text-body-sm)">Comunidad Privada</h4></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ecc-reveal ecc-reveal-2" style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-5)">
+<!-- QUITADO: calificación "4.67 · 383 reseñas" (no era real). Volver a poner solo con reseñas verificables y su fuente. -->
+        <h1 style="color:var(--text-on-dark);font-size:clamp(36px,5.6vw,62px);max-width:16ch"><span class="ecc-h1-acento2">Transforma</span> tu Cuerpo en <span class="ecc-h1-acento3">8 Semanas</span> con <span class="ecc-h1-acento">Neurociencia</span></h1>
+        <p style="max-width:46ch;font-size:var(--text-body-lg);line-height:var(--leading-body);color:var(--text-on-dark)"><strong>Deja de volver a empezar.</strong> Nuestro <em>equipo medico</em> ha desarrollado un programa <strong>basado en neurociencia</strong> para que puedas crear <strong>nuevos habitos de entrenamiento y nutricion que perduren en el tiempo</strong> y te permitan cambiar tu cuerpo <strong>una vez por todas</strong>.</p>
+
+        <div class="ecc-trust" style="border-top:1px solid var(--border-on-dark);border-bottom:1px solid var(--border-on-dark);padding:var(--space-4) 0;width:100%">
+          <span style="display:flex;align-items:center;gap:9px;font-family:var(--font-mono);font-size:var(--text-caption);letter-spacing:var(--tracking-mono);text-transform:uppercase;color:var(--text-on-dark)"><i class="ph-light ph-first-aid-kit" style="flex:none;font-size:17px;color:var(--cyan-300)"></i><span>Desarrollado por Medicos</span></span>
+          <span style="display:flex;align-items:center;gap:9px;font-family:var(--font-mono);font-size:var(--text-caption);letter-spacing:var(--tracking-mono);text-transform:uppercase;color:var(--text-on-dark)"><i class="ph-light ph-microscope" style="flex:none;font-size:17px;color:var(--cyan-300)"></i><span>Mas de 500 Estudios Revisados</span></span>
+          <span style="display:flex;align-items:center;gap:9px;font-family:var(--font-mono);font-size:var(--text-caption);letter-spacing:var(--tracking-mono);text-transform:uppercase;color:var(--text-on-dark)"><i class="ph-light ph-brain" style="flex:none;font-size:17px;color:var(--cyan-300)"></i><span>Basado en la ultima neurociencia y ciencia del deporte</span></span>
+        </div>
+
+        <div class="ecc-bezel ecc-bezel-on-dark" style="width:100%">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" style="padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-5)">
+            <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:var(--space-2)">
+                <div style="display:flex;align-items:center;gap:var(--space-3)">
+                  <span class="ecc-num" style="font-family:var(--font-mono);font-size:20px;font-weight:500;letter-spacing:.02em;text-decoration:line-through;color:var(--text-on-dark-muted)">$67</span>
+                  <span class="ecc-num" style="display:inline-flex;align-items:center;padding:4px 11px;border-radius:999px;border:1px solid var(--border-on-dark);font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text-on-dark-muted);white-space:nowrap">40% OFF</span>
+                </div>
+                <p class="ecc-num" style="display:flex;justify-content:center;align-items:flex-start;text-align:center;font-family:var(--font-display);font-variation-settings:var(--vf-display);font-size:clamp(44px,7vw,68px);font-weight:var(--weight-bold);line-height:1;letter-spacing:var(--tracking-tight);color:var(--gold-400)"><span style="display:flex;align-items:flex-start;gap:2px">$40</span></p>
+              </div>
+              <p style="font-size:var(--text-body-md);line-height:var(--leading-body);text-align:center;color:var(--text-on-dark)">Menos que una consulta con un nutricionista</p>
+              <p style="font-size:var(--text-body-md);line-height:var(--leading-body);text-align:center;color:var(--text-on-dark)">Menos que una membresia mensual en el gimnasio</p>
+            </div>
+            <a href="#empezar" class="ecc-cta"><span>REGISTRATE EN LA LISTA DE ESPERA</span><span class="ecc-cta-ico"><i class="ph-light ph-arrow-right" style="font-size:17px"></i></span></a>
+            <div style="display:flex;flex-direction:column;gap:var(--space-2);padding-top:var(--space-4);border-top:1px solid var(--border-on-dark)">
+              <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px">
+                <span style="display:inline-flex;align-items:center;gap:8px;padding:8px 15px 8px 11px;border-radius:999px;border:1px solid rgba(109,205,242,.55);background:#0A2540;box-shadow:0 6px 18px rgba(10,37,64,.22)">
+                  <i class="ph-fill ph-shield-check" style="flex:none;font-size:18px;color:#6DCDF2"></i>
+                  <span style="font-family:var(--font-body);font-size:13px;font-weight:700;letter-spacing:.01em;line-height:1.2;color:#FFFFFF;white-space:nowrap">Garantía 30 días</span>
+                </span>
+                <span style="display:inline-flex;align-items:center;gap:8px;padding:8px 15px 8px 11px;border-radius:999px;border:1px solid rgba(109,205,242,.55);background:#0A2540;box-shadow:0 6px 18px rgba(10,37,64,.22)">
+                  <i class="ph-fill ph-lightning" style="flex:none;font-size:18px;color:#6DCDF2"></i>
+                  <span style="font-family:var(--font-body);font-size:13px;font-weight:700;letter-spacing:.01em;line-height:1.2;color:#FFFFFF;white-space:nowrap">Acceso inmediato</span>
+                </span>
+                <span style="display:inline-flex;align-items:center;gap:8px;padding:8px 15px 8px 11px;border-radius:999px;border:1px solid rgba(109,205,242,.55);background:#0A2540;box-shadow:0 6px 18px rgba(10,37,64,.22)">
+                  <i class="ph-fill ph-arrow-u-up-left" style="flex:none;font-size:18px;color:#6DCDF2"></i>
+                  <span style="font-family:var(--font-body);font-size:13px;font-weight:700;letter-spacing:.01em;line-height:1.2;color:#FFFFFF;white-space:nowrap">Cancela cuando quieras</span>
+                </span>
+              </div>
+              <p style="font-size:12px;line-height:1.5;text-align:center;color:var(--text-on-dark)">Si no te sirve, te devolvemos el 100% de tu dinero.</p>
+              <div class="ecc-pago"><span class="ecc-pago-candado"><i class="ph-fill ph-lock-simple"></i></span><span class="ecc-pago-txt"><strong>Pago 100% seguro</strong><span>procesado por</span></span><img class="ecc-pago-logo" src="assets/mercadopago.png" alt="Mercado Pago"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="ecc-pad" style="margin-top:var(--gap-section)"><div class="ecc-bezel ecc-bezel-on-dark ecc-marquee-shell ecc-reveal"><div class="ecc-bezel-core ecc-bezel-core-on-dark ecc-marquee">
+      <div class="ecc-marquee-head"><i></i><span style="font-weight:700">Basado en los Ultimos Estudios Publicados en</span><i></i></div>
+      <div class="ecc-marquee-viewport">
+      <div class="ecc-marquee-track">
+        <div class="ecc-marquee-set">
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/acsm-white.png" alt="American College of Sports Medicine — Medicine &amp; Science in Sports &amp; Exercise" style="width:100%;height:100%;object-fit:contain"></div>
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/nsca-white.png" alt="NSCA — Journal of Strength and Conditioning Research" style="width:100%;height:100%;object-fit:contain"></div>
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/ajcn-white.png" alt="The American Journal of Clinical Nutrition" style="width:100%;height:100%;object-fit:contain"></div>
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/apnm-white.png" alt="Applied Physiology, Nutrition, and Metabolism" style="width:100%;height:100%;object-fit:contain"></div>
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/ajsm-white.png" alt="The American Journal of Sports Medicine" style="width:100%;height:100%;object-fit:contain"></div>
+        </div>
+        <div class="ecc-marquee-set" aria-hidden="true">
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/acsm-white.png" alt="American College of Sports Medicine — Medicine &amp; Science in Sports &amp; Exercise" style="width:100%;height:100%;object-fit:contain"></div>
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/nsca-white.png" alt="NSCA — Journal of Strength and Conditioning Research" style="width:100%;height:100%;object-fit:contain"></div>
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/ajcn-white.png" alt="The American Journal of Clinical Nutrition" style="width:100%;height:100%;object-fit:contain"></div>
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/apnm-white.png" alt="Applied Physiology, Nutrition, and Metabolism" style="width:100%;height:100%;object-fit:contain"></div>
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/ajsm-white.png" alt="The American Journal of Sports Medicine" style="width:100%;height:100%;object-fit:contain"></div>
+        </div>
+        <div class="ecc-marquee-set" aria-hidden="true">
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/acsm-white.png" alt="American College of Sports Medicine — Medicine &amp; Science in Sports &amp; Exercise" style="width:100%;height:100%;object-fit:contain"></div>
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/nsca-white.png" alt="NSCA — Journal of Strength and Conditioning Research" style="width:100%;height:100%;object-fit:contain"></div>
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/ajcn-white.png" alt="The American Journal of Clinical Nutrition" style="width:100%;height:100%;object-fit:contain"></div>
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/apnm-white.png" alt="Applied Physiology, Nutrition, and Metabolism" style="width:100%;height:100%;object-fit:contain"></div>
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/ajsm-white.png" alt="The American Journal of Sports Medicine" style="width:100%;height:100%;object-fit:contain"></div>
+        </div>
+        <div class="ecc-marquee-set" aria-hidden="true">
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/acsm-white.png" alt="American College of Sports Medicine — Medicine &amp; Science in Sports &amp; Exercise" style="width:100%;height:100%;object-fit:contain"></div>
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/nsca-white.png" alt="NSCA — Journal of Strength and Conditioning Research" style="width:100%;height:100%;object-fit:contain"></div>
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/ajcn-white.png" alt="The American Journal of Clinical Nutrition" style="width:100%;height:100%;object-fit:contain"></div>
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/apnm-white.png" alt="Applied Physiology, Nutrition, and Metabolism" style="width:100%;height:100%;object-fit:contain"></div>
+          <div class="ecc-jrnl" style="flex:none;width:152px;height:44px;opacity:.9"><img src="assets/journals/ajsm-white.png" alt="The American Journal of Sports Medicine" style="width:100%;height:100%;object-fit:contain"></div>
+        </div>
+      </div>
+      </div>
+    </div></div></div>
+  </section>
+
+  <div class="ecc-separador" aria-hidden="true" style="position:relative;z-index:3;height:0;display:flex;justify-content:center;align-items:center"><span style="position:absolute;left:50%;top:0;width:min(980px,86%);height:1px;transform:translateX(-50%);background:linear-gradient(90deg,rgba(1,127,167,0) 0%,rgba(1,127,167,.45) 35%,rgba(1,127,167,.45) 65%,rgba(1,127,167,0) 100%)"></span><svg width="26" height="26" viewBox="0 0 24 24" style="position:relative;display:block;flex:none;filter:drop-shadow(0 0 8px rgba(35,211,255,.55))"><polygon points="12,2 21,7 21,17 12,22 3,17 3,7" fill="#FFFFFF" stroke="#017FA7" stroke-width="1.4"></polygon><circle cx="12" cy="12" r="2.6" fill="#23D3FF"></circle></svg></div>
+  
+
+<!-- NUEVO (marco de landing): estructura agregada; el texto entre [corchetes] lo llena el equipo; el resto del copy nuevo está por aprobar -->
+  <section data-screen-label="02 Por qué funciona" style="padding:var(--gap-section) 0">
+    <div class="ecc-pad" style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:var(--space-10)">
+      <div class="ecc-reveal" style="display:flex;flex-direction:column;align-items:center;gap:var(--space-5);text-align:center">
+        <span class="ecc-eyebrow">¿Por que funciona este metodo?</span>
+        <h2 style="max-width:30ch">El problema nunca fue tu plan de entrenamiento o nutricion</h2>
+      </div>
+
+      <!-- COPY NUEVO (29-09-2026): texto entregado por el cliente, transcrito literal -->
+      <div class="ecc-prose ecc-reveal ecc-reveal-2 ecc-sintesis">
+        <p>¿Cuántas veces has dicho <strong>«hoy empiezo a cambiar mi cuerpo»</strong>? Empiezas con ganas, los primeros días salen bien y luego aparece algún imprevisto: una salida, un antojo en la noche, una semana pesada en el trabajo. Y asi dejas de comer bien, ir al gimnasio y <strong>empieza el ciclo de nuevo</strong>. Lo único que piensas es: <strong>«me falta fuerza de voluntad»</strong>.</p>
+        <p>No te pasa solo a ti. <strong>Es un problema muy común.</strong></p>
+        <p>Lo que nadie te explicó es que <span class="ecc-hl">tu cerebro no está hecho para cambiar radicalmente tus hábitos solo a fuerza de voluntad.</span></p>
+      </div>
+      <div class="ecc-prose ecc-reveal ecc-sintesis">
+        <p>Cuando empiezas algo nuevo, cada decisión pasa por algo que se conoce como la <strong>corteza prefrontal</strong>: <em>¿entreno hoy?, ¿me como esto?</em> Funciona, pero te obliga a decidir una y otra vez. Cuando repites una conducta a lo largo del tiempo, poco a poco esta decisión pasa de la corteza prefrontal a los <strong>ganglios basales</strong>, que responden en automático. Eso significa que <span class="ecc-hl">construiste un hábito</span>. Nunca mas tienes que pensar sobre ello y te deja de fatigar tomar tantas decisiones.</p>
+        <p>El problema es que hacer que estos cambios en tu vida pasen a los ganglios basales no es tan simple. En un estudio del <em>European Journal of Social Psychology</em>, volver automática una conducta tomo <strong class="ecc-dato">una media de 66 dias</strong>.</p>
+      </div>
+      <div class="ecc-prose ecc-reveal ecc-sintesis">
+        <p>Por eso es que no necesitas otra dieta u otro plan de ejercicios. Necesitas <span class="ecc-hl">un método probado, que te ayude a llegar a los primeros 60 dias</span> y que aumenta la probabilidad que muevas todas estas conductas que son buena para ti de la corteza prefrontal a los ganglios basales.</p>
+        <p><strong>Justamente ese es el método que hemos desarrollado en Entrena con Ciencia.</strong> Nuestro grupo de profesionales en ciencia del deporte, nutrición y neurociencia han construido un plan basado en la ultima neurociencia para ayudarte a hacer esto.</p>
+      </div>
+      <div class="ecc-prose ecc-reveal ecc-sintesis" style="align-items:flex-start">
+        <span class="ecc-eyebrow">Mi historia</span>
+        <p>Mi nombre es el Dr. Gonzalo León. Hace 7 años empeze mi carrera de medicina y <strong>llegue a pesar 120 kilos</strong>. Despues de 12 meses sintiéndome con poca energía y con vergüenza cada vez que me veía al espejo <strong>decidí cambiar mi vida por completo</strong>. Empeze a buscar soluciones y asi fue como termine volviéndome muy apasionado por <span class="ecc-hl">ayudar a personas como tu a cambiar su vida</span>.</p>
+        <p>Hoy me acompaña un equipo de nutricionistas, especialistas en ciencia del deporte y neurociencia que diseñaron este programa desde varias especialidades clínicas. <em>Un equipo médico no te promete kilos en un plazo:</em> <strong>te explica como hacer un cambio real en tus hábitos y en tu vida.</strong></p>
+        <figure class="ecc-antesdespues ecc-reveal"><div class="ecc-ad-par"><div class="ecc-ad-foto"><img src="assets/leon-antes.jpg" alt="Dr. Gonzalo León antes de su cambio"><span>Antes</span></div><div class="ecc-ad-foto"><img src="assets/leon-despues.jpg" alt="Dr. Gonzalo León después de su recomposición corporal"><span>Después</span></div></div><figcaption>Dr. Gonzalo León, antes y después de su propia recomposición corporal.</figcaption></figure>
+      </div>
+
+      <div class="ecc-reveal" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-5)">
+        <p style="max-width:52ch;font-size:17px;line-height:1.7">Llevas años creyendo que el problema eras tú. El problema era el método que estabas siguiendo.</p>
+        <span style="width:56px;height:3px;border-radius:2px;background:var(--gold-400)"></span>
+        <p style="font-family:var(--font-display);font-variation-settings:var(--vf-display);font-size:clamp(28px,5.2vw,42px);font-weight:var(--weight-bold);letter-spacing:var(--tracking-tight);line-height:1.15;white-space:nowrap;color:var(--text-strong)">Que este sea tu último Día 1.</p>
+      </div>
+    </div>
+  </section><div class="ecc-separador" aria-hidden="true" style="position:relative;z-index:3;height:0;display:flex;justify-content:center;align-items:center"><span style="position:absolute;left:50%;top:0;width:min(980px,86%);height:1px;transform:translateX(-50%);background:linear-gradient(90deg,rgba(1,127,167,0) 0%,rgba(1,127,167,.45) 35%,rgba(1,127,167,.45) 65%,rgba(1,127,167,0) 100%)"></span><svg width="26" height="26" viewBox="0 0 24 24" style="position:relative;display:block;flex:none;filter:drop-shadow(0 0 8px rgba(35,211,255,.55))"><polygon points="12,2 21,7 21,17 12,22 3,17 3,7" fill="#FFFFFF" stroke="#017FA7" stroke-width="1.4"></polygon><circle cx="12" cy="12" r="2.6" fill="#23D3FF"></circle></svg></div>
+  <section class="ecc-atmos" data-screen-label="03 Qué incluye" style="padding:var(--gap-section) 0">
+    <div class="ecc-pad" style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:var(--space-12)">
+      <div class="ecc-reveal" style="display:flex;flex-direction:column;align-items:center;gap:var(--space-5);text-align:center">
+        <h2 style="color:var(--text-on-dark);max-width:22ch">Que Incluye Nuestro Programa</h2>
+      </div>
+      <div class="ecc-split ecc-reveal ecc-reveal-2" style="grid-template-columns:1fr 1fr;align-items:stretch">
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" data-no-video="" style="padding:var(--space-6);height:100%;display:flex;flex-direction:column;justify-content:center;gap:var(--space-4)">
+            <span class="ecc-label" style="color:var(--cyan-300)">EL NÚCLEO</span>
+            <h3 style="color:var(--text-on-dark)">Curso de Neurociencia del Cambio de Habitos</h3>
+            <p style="font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-on-dark-muted)"><strong>Lo mas importante de nuestro programa.</strong> Te explicamos el proceso por el que se crean nuevos habitos y <em>por que la mayoria de personas falla</em>. La verdad es que crear un nuevo habito <span class="ecc-hl">no depende de tu fuerza de voluntad si no de entender como funciona tu cuerpo</span>.</p>
+          </div>
+        </div>
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0;min-height:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" data-no-video="" style="position:relative;overflow:hidden;cursor:pointer;min-height:340px;height:100%">
+            <image-slot id="mod-nucleo" shape="rect" placeholder="Video o portada del curso de adherencia"></image-slot>
+          </div>
+        </div>
+      </div>
+
+      <div class="ecc-split ecc-reveal" style="grid-template-columns:1fr 1fr;align-items:stretch">
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0;min-height:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" data-no-video="" style="position:relative;overflow:hidden;cursor:pointer;min-height:340px;height:100%">
+            <image-slot id="mod-fundamentos" shape="rect" placeholder="Video o portada del curso de fundamentos"></image-slot>
+          </div>
+        </div>
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" data-no-video="" style="padding:var(--space-6);height:100%;display:flex;flex-direction:column;justify-content:center;gap:var(--space-4)">
+            <span class="ecc-label" style="color:var(--cyan-300)">LA BASE CIENTÍFICA</span>
+            <h3 style="color:var(--text-on-dark)">Curso de Fundamentos de Entrenamiento y Nutrición</h3>
+            <p style="font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-on-dark-muted)"><strong>Te explicamos la ultima ciencia del deporte.</strong> Tocamos <em>nutricion, seleccion de ejercicios, periodos de descanso</em> y muchas cosas mas. Basa tu entrenamiento y nutricion en la ultima ciencia para hacer el proceso <span class="ecc-hl">lo mas eficiente posible</span>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="ecc-split ecc-reveal" style="grid-template-columns:1fr 1fr;align-items:stretch">
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" data-no-video="" style="padding:var(--space-6);height:100%;display:flex;flex-direction:column;justify-content:center;gap:var(--space-4)">
+            <span class="ecc-label" style="color:var(--cyan-300)">Aplicacion tactica de ciencia del deporte</span>
+            <h3 style="color:var(--text-on-dark)">Rutinas de Entrenamiento y Plan de Nutricion</h3>
+            <p style="font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-on-dark-muted)">Te damos nuestras ultimas <strong>rutinas basadas en evidencia</strong> y te ayudamos a desarollar un <em>plan nutricional</em> para <span class="ecc-hl">facilitar tu transformacion</span>.</p>
+          </div>
+        </div>
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0;min-height:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" data-no-video="" style="position:relative;overflow:hidden;cursor:pointer;min-height:340px;height:100%">
+            <image-slot id="mod-rutinas-entreno" shape="rect" placeholder="Video o portada de las rutinas de entrenamiento"></image-slot>
+          </div>
+        </div>
+      </div>
+
+      <div class="ecc-split ecc-reveal" style="grid-template-columns:1fr 1fr;align-items:stretch">
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0;min-height:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" data-no-video="" style="position:relative;overflow:hidden;cursor:pointer;min-height:340px;height:100%">
+            <image-slot id="mod-protocolos" shape="rect" placeholder="Video o portada de los protocolos"></image-slot>
+          </div>
+        </div>
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" data-no-video="" style="padding:var(--space-6);height:100%;display:flex;flex-direction:column;justify-content:center;gap:var(--space-4)">
+            <span class="ecc-label" style="color:var(--cyan-300)">Que hacer cuando hay imprevistos</span>
+            <h3 style="color:var(--text-on-dark)">Protocolos para Dias Dificiles</h3>
+            <p style="font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-on-dark-muted)">Todas las personas tiene <span class="ecc-hl">imprevistos y dias dificiles</span>. Hemos creado una <strong>biblioteca de protocolos</strong> que atacan problemas comunes que impiden una transformacion. Por ejemplo: <em>¿Que hacer si sales a comer a un restaurante? ¿Que hago si me salto un entrenamiento?</em> y muchas otras situaciones comunes.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="ecc-split ecc-reveal" style="grid-template-columns:1fr 1fr;align-items:stretch">
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" data-no-video="" style="padding:var(--space-6);height:100%;display:flex;flex-direction:column;justify-content:center;gap:var(--space-4)">
+            <span class="ecc-label" style="color:var(--cyan-300)">App con IA</span>
+            <h3 style="color:var(--text-on-dark)">Aplicación de Seguimiento</h3>
+            <p style="font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-on-dark-muted)">Te damos <strong>acceso por un mes</strong> a nuestra aplicacion que se apoya en <em>inteligencia artificial</em> para <span class="ecc-hl">ayudarte a planificar tu entrenamiento, nutricion y recuperacion</span>. Incluye videos por cada ejercicio a realizar, multiples planes de entrenamiento en casa y en el gimnasio y recetas hechas por nuestro equipo.</p>
+          </div>
+        </div>
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0;min-height:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" data-no-video="" style="position:relative;overflow:hidden;cursor:pointer;min-height:340px;height:100%">
+            <image-slot id="mod-app-seguimiento" shape="rect" placeholder="Video o demo de la aplicación de seguimiento"></image-slot>
+          </div>
+        </div>
+      </div>
+
+      <div class="ecc-split ecc-reveal" style="grid-template-columns:1fr 1fr;align-items:stretch">
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0;min-height:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" data-no-video="" style="position:relative;overflow:hidden;cursor:pointer;min-height:340px;height:100%">
+            <image-slot id="mod-comunidad-privada" shape="rect" placeholder="Video o portada de la comunidad privada"></image-slot>
+          </div>
+        </div>
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" data-no-video="" style="padding:var(--space-6);height:100%;display:flex;flex-direction:column;justify-content:center;gap:var(--space-4)">
+            <span class="ecc-label" style="color:var(--cyan-300)">Soporte y Informacion</span>
+            <h3 style="color:var(--text-on-dark)">Comunidad Privada</h3>
+            <p style="font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-on-dark-muted)">Accede a nuestra <strong>comunidad privada</strong> donde tendras otras personas <em>igual de motivadas</em> para <span class="ecc-hl">transformar tu cuerpo</span>.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+<!-- NUEVO (marco de landing): estructura agregada; el texto entre [corchetes] lo llena el equipo; el resto del copy nuevo está por aprobar -->
+  <div class="ecc-separador" aria-hidden="true" style="position:relative;z-index:3;height:0;display:flex;justify-content:center;align-items:center"><span style="position:absolute;left:50%;top:0;width:min(980px,86%);height:1px;transform:translateX(-50%);background:linear-gradient(90deg,rgba(1,127,167,0) 0%,rgba(1,127,167,.45) 35%,rgba(1,127,167,.45) 65%,rgba(1,127,167,0) 100%)"></span><svg width="26" height="26" viewBox="0 0 24 24" style="position:relative;display:block;flex:none;filter:drop-shadow(0 0 8px rgba(35,211,255,.55))"><polygon points="12,2 21,7 21,17 12,22 3,17 3,7" fill="#FFFFFF" stroke="#017FA7" stroke-width="1.4"></polygon><circle cx="12" cy="12" r="2.6" fill="#23D3FF"></circle></svg></div>
+  <section data-screen-label="03b Cómo funciona" style="padding:var(--gap-section) 0">
+    <div class="ecc-pad" style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:var(--space-10)">
+      <div class="ecc-reveal" style="display:flex;flex-direction:column;align-items:center;gap:var(--space-5);text-align:center">
+        <span class="ecc-eyebrow">Cómo funciona</span>
+      </div>
+      <div style="width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-5)">
+        <div class="ecc-bezel ecc-reveal" style="min-width:0">
+          <div class="ecc-bezel-core" style="height:100%;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-3)">
+            <span class="ecc-num" style="font-family:var(--font-display);font-size:36px;font-weight:800;line-height:1;color:var(--cyan-600)">01</span>
+            <h3 style="font-size:var(--text-h4)">Entras hoy mismo</h3>
+            <p style="font-size:var(--text-body-sm);line-height:var(--leading-body);color:var(--text-muted)"><strong>Acceso inmediato</strong> al curso completo y a la aplicación.</p>
+          </div>
+        </div>
+        <div class="ecc-bezel ecc-reveal" style="min-width:0">
+          <div class="ecc-bezel-core" style="height:100%;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-3)">
+            <span class="ecc-num" style="font-family:var(--font-display);font-size:36px;font-weight:800;line-height:1;color:var(--cyan-600)">02</span>
+            <h3 style="font-size:var(--text-h4)">Entiendes por qué antes no funcionaba</h3>
+            <p style="font-size:var(--text-body-sm);line-height:var(--leading-body);color:var(--text-muted)">Empiezas por el <em>Curso de Neurociencia del Cambio de Hábitos</em>: cómo se forma un hábito y por qué <span class="ecc-hl">la fuerza de voluntad sola no alcanza</span>.</p>
+          </div>
+        </div>
+        <div class="ecc-bezel ecc-reveal" style="min-width:0">
+          <div class="ecc-bezel-core" style="height:100%;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-3)">
+            <span class="ecc-num" style="font-family:var(--font-display);font-size:36px;font-weight:800;line-height:1;color:var(--cyan-600)">03</span>
+            <h3 style="font-size:var(--text-h4)">Armas un plan que cabe en tu semana</h3>
+            <p style="font-size:var(--text-body-sm);line-height:var(--leading-body);color:var(--text-muted)">Eliges tus rutinas, <span class="ecc-hl">de 2 a 5 días</span>, <em>en casa o en gimnasio</em>, y armas tu <strong>plan de nutrición</strong>.</p>
+          </div>
+        </div>
+        <div class="ecc-bezel ecc-reveal" style="min-width:0">
+          <div class="ecc-bezel-core" style="height:100%;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-3)">
+            <span class="ecc-num" style="font-family:var(--font-display);font-size:36px;font-weight:800;line-height:1;color:var(--cyan-600)">04</span>
+            <h3 style="font-size:var(--text-h4)">Lo sostienes cuando aparece el imprevisto</h3>
+            <p style="font-size:var(--text-body-sm);line-height:var(--leading-body);color:var(--text-muted)">La aplicación, los <em>Protocolos para Días Difíciles</em> y nuestra comunidad <span class="ecc-hl">te ayudan a cambiar por completo tu cuerpo</span>.</p>
+          </div>
+        </div>
+      </div>
+      <a href="#empezar" class="ecc-cta ecc-reveal"><span>REGISTRATE EN LA LISTA DE ESPERA</span><span class="ecc-cta-ico"><i class="ph-light ph-arrow-right" style="font-size:17px"></i></span></a>
+    </div>
+  </section>
+
+  <div class="ecc-separador" aria-hidden="true" style="position:relative;z-index:3;height:0;display:flex;justify-content:center;align-items:center"><span style="position:absolute;left:50%;top:0;width:min(980px,86%);height:1px;transform:translateX(-50%);background:linear-gradient(90deg,rgba(1,127,167,0) 0%,rgba(1,127,167,.45) 35%,rgba(1,127,167,.45) 65%,rgba(1,127,167,0) 100%)"></span><svg width="26" height="26" viewBox="0 0 24 24" style="position:relative;display:block;flex:none;filter:drop-shadow(0 0 8px rgba(35,211,255,.55))"><polygon points="12,2 21,7 21,17 12,22 3,17 3,7" fill="#FFFFFF" stroke="#017FA7" stroke-width="1.4"></polygon><circle cx="12" cy="12" r="2.6" fill="#23D3FF"></circle></svg></div>
+  <section class="ecc-atmos" data-screen-label="04 Quién está detrás" style="padding:var(--gap-section) 0">
+    <div class="ecc-pad" style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:var(--space-12)">
+      <div class="ecc-reveal" style="display:flex;flex-direction:column;align-items:center;gap:var(--space-5);text-align:center">
+        <h2 style="color:var(--text-on-dark);max-width:28ch">Nuestro Equipo Medico</h2>
+      </div>
+
+      <div class="ecc-split ecc-reveal" style="grid-template-columns:1fr 1fr;align-items:stretch">
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0;min-height:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" style="overflow:hidden;position:relative;min-height:380px;height:100%">
+            <img src="assets/dr-gonzalo-leon-equipo.jpg" alt="Dr. Gonzalo León, director médico de Entrena con Ciencia" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 45%">
+          </div>
+        </div>
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" style="padding:var(--space-6);height:100%;display:flex;flex-direction:column;gap:var(--space-4)">
+            <span class="ecc-label" style="color:var(--cyan-300)">Especialista en Ciencia del Deporte</span>
+            <h3 style="color:var(--text-on-dark)">Dr. Gonzalo Leon</h3>
+            <p style="font-size:var(--text-body-sm);line-height:var(--leading-body);color:var(--text-on-dark-muted)"><strong>Médico cirujano</strong>, enfocado en entrenamiento basado en evidencia. Hoy cursa la <strong>Maestría en Longevidad y Antienvejecimiento</strong> en el IL3 de la Universidad de Barcelona. [N.º de colegiatura CMP]</p>
+            <p style="font-size:var(--text-body-sm);line-height:var(--leading-body);color:var(--text-on-dark-muted)">Durante la carrera de medicina llegó a pesar 120 kilos. El cambio llegó cuando entendió la <em>fisiología del cuerpo humano</em> y cómo se cruza con el <em>balance energético</em>: así logró su propia <strong>recomposición corporal</strong>.</p>
+            <p style="font-size:var(--text-body-sm);line-height:var(--leading-body);color:var(--text-on-dark-muted)">Desde entonces ha acompañado a muchos pacientes a perder peso <span class="ecc-hl">con la mayor flexibilidad posible</span>. Construyó Entrena con Ciencia para llevar ese método a más personas de las que puede atender una por una.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="ecc-split ecc-reveal" style="grid-template-columns:1fr 1fr;align-items:stretch">
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" style="padding:var(--space-6);height:100%;display:flex;flex-direction:column;gap:var(--space-4)">
+            <span class="ecc-label" style="color:var(--cyan-300)">Especialista en Nutrición</span>
+            <h3 style="color:var(--text-on-dark)">Lic. Rafaela Silva</h3>
+            <p style="font-size:var(--text-body-sm);line-height:var(--leading-body);color:var(--text-on-dark-muted)"><strong>Licenciada en Nutrición y Dietética</strong> (UPC), con <strong>más de 5 años de experiencia</strong> y <span class="ecc-hl">más de 1200 pacientes atendidos</span>. Cursos de especialización en <em>microbiota y nutrición</em> (Universidad Peruana Cayetano Heredia), <em>nutrición hormonal</em> (Nutrition Society) y <em>nutrición renal</em> (Colegio de Nutricionistas del Perú). Certificación antropométrica ISAK nivel 1. [N.º de colegiatura CNP]</p>
+            <p style="font-size:var(--text-body-sm);line-height:var(--leading-body);color:var(--text-on-dark-muted)">[Qué parte del programa construyó y con qué criterio — en sus palabras.]</p>
+          </div>
+        </div>
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0;min-height:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" style="overflow:hidden;position:relative;min-height:380px;height:100%">
+            <img src="assets/rafaela-silva-equipo.jpg" alt="Lic. Rafaela Silva, especialista en nutrición de Entrena con Ciencia" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 45%">
+          </div>
+        </div>
+      </div>
+
+      <div class="ecc-split ecc-reveal" style="grid-template-columns:1fr 1fr;align-items:stretch">
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0;min-height:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" style="overflow:hidden;position:relative;min-height:380px;height:100%">
+            <img src="assets/ana-paula-ceballos-equipo.jpg" alt="Ps. Ana Paula Ceballos, psicóloga clínica de Entrena con Ciencia" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 45%">
+          </div>
+        </div>
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" style="padding:var(--space-6);height:100%;display:flex;flex-direction:column;gap:var(--space-4)">
+            <span class="ecc-label" style="color:var(--cyan-300)">Psicóloga clínica · TCA y obesidad</span>
+            <h3 style="color:var(--text-on-dark)">Ps. Ana Paula Ceballos</h3>
+            <p style="font-size:var(--text-body-sm);line-height:var(--leading-body);color:var(--text-on-dark-muted)"><strong>Psicóloga clínica</strong> especialista en <span class="ecc-hl">trastornos de la conducta alimentaria (TCA) y obesidad</span>, con formación en <em>terapia cognitivo-conductual</em>. <strong>Máster en Trastornos Alimenticios y Obesidad</strong> (Universidad Europea, Madrid) y licenciada en Psicología Clínica (University of South Florida). Se formó en las <em>Unidades de TCA</em> del Hospital Universitario Santa Cristina y del Hospital Infantil Universitario Niño Jesús, en Madrid, y hoy atiende en la <strong>Clínica San Felipe</strong>, en Lima. Certificada en <em>ansiedad y trastornos relacionados</em> (American Psychological Association) y en <em>fundamentos de TCC</em> (Beck Institute). [N.º de colegiatura CPsP]</p>
+            <p style="font-size:var(--text-body-sm);line-height:var(--leading-body);color:var(--text-on-dark-muted)">[Qué parte del programa construyó y con qué criterio — en sus palabras.]</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+<!-- NUEVO (marco de landing): estructura agregada; el texto entre [corchetes] lo llena el equipo; el resto del copy nuevo está por aprobar -->
+  <div class="ecc-separador" aria-hidden="true" style="position:relative;z-index:3;height:0;display:flex;justify-content:center;align-items:center"><span style="position:absolute;left:50%;top:0;width:min(980px,86%);height:1px;transform:translateX(-50%);background:linear-gradient(90deg,rgba(1,127,167,0) 0%,rgba(1,127,167,.45) 35%,rgba(1,127,167,.45) 65%,rgba(1,127,167,0) 100%)"></span><svg width="26" height="26" viewBox="0 0 24 24" style="position:relative;display:block;flex:none;filter:drop-shadow(0 0 8px rgba(35,211,255,.55))"><polygon points="12,2 21,7 21,17 12,22 3,17 3,7" fill="#FFFFFF" stroke="#017FA7" stroke-width="1.4"></polygon><circle cx="12" cy="12" r="2.6" fill="#23D3FF"></circle></svg></div>
+  <section data-screen-label="04b Más prueba social" style="padding:var(--gap-section) 0">
+    <div class="ecc-pad" style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:var(--space-10)">
+      <div class="ecc-reveal" style="display:flex;flex-direction:column;align-items:center;gap:var(--space-5);text-align:center">
+        <span class="ecc-eyebrow">En sus palabras</span>
+        <h2 style="max-width:28ch">Personas como tú, que dejaron de volver a empezar</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-5)">
+        <div class="ecc-bezel ecc-reveal" style="min-width:0">
+          <div class="ecc-bezel-core" style="position:relative;aspect-ratio:9/16">
+            <image-slot id="prueba-video-1" shape="rect" placeholder="Video testimonio vertical, con subtítulos"></image-slot><div class="ecc-ej ecc-ej-video ecc-ej-video--foto"><img src="assets/ejemplo/ejemplo-video-1.jpg" alt="Portada de video testimonio (imagen de ejemplo)" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 45%"><span class="ecc-ej-badge">Ejemplo · no publicar</span><span class="ecc-ej-play"><i class="ph-fill ph-play"></i></span><span class="ecc-ej-dur">0:48</span><div class="ecc-ej-cap"><p>«Por primera vez no abandoné en la semana tres.»</p><p>Valeria G., 37 · Cusco</p></div></div>
+          </div>
+        </div>
+        <div class="ecc-bezel ecc-reveal" style="min-width:0">
+          <div class="ecc-bezel-core" style="position:relative;aspect-ratio:9/16">
+            <image-slot id="prueba-video-2" shape="rect" placeholder="Video testimonio vertical, con subtítulos"></image-slot><div class="ecc-ej ecc-ej-video ecc-ej-video--foto"><img src="assets/ejemplo/ejemplo-video-2.jpg" alt="Portada de video testimonio (imagen de ejemplo)" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 45%"><span class="ecc-ej-badge">Ejemplo · no publicar</span><span class="ecc-ej-play"><i class="ph-fill ph-play"></i></span><span class="ecc-ej-dur">1:12</span><div class="ecc-ej-cap"><p>«Entreno en casa tres días. Me alcanza.»</p><p>Jorge T., 45 · Quito</p></div></div>
+          </div>
+        </div>
+        <div class="ecc-bezel ecc-reveal" style="min-width:0">
+          <div class="ecc-bezel-core" style="position:relative;aspect-ratio:9/16">
+            <image-slot id="prueba-video-3" shape="rect" placeholder="Video testimonio vertical, con subtítulos"></image-slot><div class="ecc-ej ecc-ej-video ecc-ej-video--foto"><img src="assets/ejemplo/ejemplo-video-3.jpg" alt="Portada de video testimonio (imagen de ejemplo)" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 45%"><span class="ecc-ej-badge">Ejemplo · no publicar</span><span class="ecc-ej-play"><i class="ph-fill ph-play"></i></span><span class="ecc-ej-dur">0:56</span><div class="ecc-ej-cap"><p>«Los protocolos para comer fuera me salvaron los fines de semana.»</p><p>Daniela S., 31 · Santiago</p></div></div>
+          </div>
+        </div>
+      </div>
+      <p style="text-align:center;font-size:var(--text-caption);color:var(--text-muted)">Los resultados varían entre personas.</p>
+    </div>
+  </section>
+
+<!-- NUEVO (marco de landing): estructura agregada; el texto entre [corchetes] lo llena el equipo; el resto del copy nuevo está por aprobar -->
+  <div class="ecc-separador" aria-hidden="true" style="position:relative;z-index:3;height:0;display:flex;justify-content:center;align-items:center"><span style="position:absolute;left:50%;top:0;width:min(980px,86%);height:1px;transform:translateX(-50%);background:linear-gradient(90deg,rgba(1,127,167,0) 0%,rgba(1,127,167,.45) 35%,rgba(1,127,167,.45) 65%,rgba(1,127,167,0) 100%)"></span><svg width="26" height="26" viewBox="0 0 24 24" style="position:relative;display:block;flex:none;filter:drop-shadow(0 0 8px rgba(35,211,255,.55))"><polygon points="12,2 21,7 21,17 12,22 3,17 3,7" fill="#FFFFFF" stroke="#017FA7" stroke-width="1.4"></polygon><circle cx="12" cy="12" r="2.6" fill="#23D3FF"></circle></svg></div>
+  <section data-screen-label="05 Preguntas y objeciones" style="padding:var(--gap-section) 0">
+    <div class="ecc-pad" style="max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:var(--space-10)">
+      <div class="ecc-reveal" style="display:flex;flex-direction:column;align-items:center;gap:var(--space-5);text-align:center">
+        <h2 style="max-width:24ch">Preguntas Frecuentes</h2>
+      </div>
+      <div class="ecc-reveal ecc-reveal-2" style="width:100%;display:flex;flex-direction:column;border-bottom:1px solid var(--border-subtle)">
+        <div style="border-top:1px solid var(--border-subtle)">
+          <div onClick="{{ toggle0 }}" style="display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);padding:var(--space-5) var(--space-1);cursor:pointer;font-family:var(--font-heading);font-variation-settings:var(--vf-heading);font-weight:var(--weight-semibold);font-size:clamp(17px,3.4vw,21px);letter-spacing:var(--tracking-tight);color:var(--text-strong)">
+            <span>He tratado de transformar mi cuerpo antes. ¿Por que esta vez seria distinto?</span>
+            <i class="ph-light ph-caret-down" style="flex:none;font-size:18px;color:var(--text-muted);margin-top:4px;transition:transform var(--dur-base) var(--ease-fluid);transform:{{ rot0 }}"></i>
+          </div>
+          <sc-if value="{{ open0 }}" hint-placeholder-val="{{ false }}">
+            <p style="padding:0 var(--space-1) var(--space-6);max-width:64ch;font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-muted)">Nuestro programa empieza por enseñarte neurociencia del cambio en vez de simplemente darte un plan de accion para el entrenamiento y tu nutricion, te ayudamos a diseñar un sistema que funcione con tu estilo de vida. Nadie te dice que sera facil pero desarollar la habilidad de ser constante es lo mas importante para ver resultados.</p>
+          </sc-if>
+        </div>
+        <div style="border-top:1px solid var(--border-subtle)">
+          <div onClick="{{ toggle1 }}" style="display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);padding:var(--space-5) var(--space-1);cursor:pointer;font-family:var(--font-heading);font-variation-settings:var(--vf-heading);font-weight:var(--weight-semibold);font-size:clamp(17px,3.4vw,21px);letter-spacing:var(--tracking-tight);color:var(--text-strong)">
+            <span>Quiero empezar con el programa pero me preocupa que no tenga tiempo.</span>
+            <i class="ph-light ph-caret-down" style="flex:none;font-size:18px;color:var(--text-muted);margin-top:4px;transition:transform var(--dur-base) var(--ease-fluid);transform:{{ rot1 }}"></i>
+          </div>
+          <sc-if value="{{ open1 }}" hint-placeholder-val="{{ false }}">
+            <p style="padding:0 var(--space-1) var(--space-6);max-width:64ch;font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-muted)">No te preocupes. Este es un problema muy comun. La ultima ciencia del deporte ha demostrado que entrenar incluso solo 2 veces a la semana es suficiente para ver cambios. Adicionalmente, proveemos rutinas de entrenamiento en casa y en el gimnasio para adecuarse a lo que te funciona mejor.</p>
+          </sc-if>
+        </div>
+        <div style="border-top:1px solid var(--border-subtle)">
+          <div onClick="{{ toggle2 }}" style="display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);padding:var(--space-5) var(--space-1);cursor:pointer;font-family:var(--font-heading);font-variation-settings:var(--vf-heading);font-weight:var(--weight-semibold);font-size:clamp(17px,3.4vw,21px);letter-spacing:var(--tracking-tight);color:var(--text-strong)">
+            <span>Soy principiante y no se nada. ¿Voy a poder entender el material?</span>
+            <i class="ph-light ph-caret-down" style="flex:none;font-size:18px;color:var(--text-muted);margin-top:4px;transition:transform var(--dur-base) var(--ease-fluid);transform:{{ rot2 }}"></i>
+          </div>
+          <sc-if value="{{ open2 }}" hint-placeholder-val="{{ false }}">
+            <p style="padding:0 var(--space-1) var(--space-6);max-width:64ch;font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-muted)">El programa esta diseñado con principantes en mente. Hemos creado los modulos de fundamentos de entrenamiento y nutricion para explicarte que tienes que hacer al detalle. La idea es llevar tus conocimientos de principiante a intermedio con el curso para que tengas los fundamentos correctos para progresar por tu cuenta.</p>
+          </sc-if>
+        </div>
+        <div style="border-top:1px solid var(--border-subtle)">
+          <div onClick="{{ toggle3 }}" style="display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);padding:var(--space-5) var(--space-1);cursor:pointer;font-family:var(--font-heading);font-variation-settings:var(--vf-heading);font-weight:var(--weight-semibold);font-size:clamp(17px,3.4vw,21px);letter-spacing:var(--tracking-tight);color:var(--text-strong)">
+            <span>¿Tengo que dejar de comer lo que me gusta?</span>
+            <i class="ph-light ph-caret-down" style="flex:none;font-size:18px;color:var(--text-muted);margin-top:4px;transition:transform var(--dur-base) var(--ease-fluid);transform:{{ rot3 }}"></i>
+          </div>
+          <sc-if value="{{ open3 }}" hint-placeholder-val="{{ false }}">
+            <p style="padding:0 var(--space-1) var(--space-6);max-width:64ch;font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-muted)">No. Un plan que te saca de la comida familiar del domingo es un plan que vas a abandonar, y eso ya lo sabemos. Hay un protocolo específico para comer fuera y para las reuniones.</p>
+          </sc-if>
+        </div>
+        <div style="border-top:1px solid var(--border-subtle)">
+          <div onClick="{{ toggle4 }}" style="display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);padding:var(--space-5) var(--space-1);cursor:pointer;font-family:var(--font-heading);font-variation-settings:var(--vf-heading);font-weight:var(--weight-semibold);font-size:clamp(17px,3.4vw,21px);letter-spacing:var(--tracking-tight);color:var(--text-strong)">
+            <span>¿Y si no me funciona?</span>
+            <i class="ph-light ph-caret-down" style="flex:none;font-size:18px;color:var(--text-muted);margin-top:4px;transition:transform var(--dur-base) var(--ease-fluid);transform:{{ rot4 }}"></i>
+          </div>
+          <sc-if value="{{ open4 }}" hint-placeholder-val="{{ false }}">
+            <p style="padding:0 var(--space-1) var(--space-6);max-width:64ch;font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-muted)">Tienes 30 días de garantía. Si no te sirve, te devolvemos el 100% de tu dinero.</p>
+          </sc-if>
+        </div>
+        <div style="border-top:1px solid var(--border-subtle)">
+          <div onClick="{{ toggle5 }}" style="display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);padding:var(--space-5) var(--space-1);cursor:pointer;font-family:var(--font-heading);font-variation-settings:var(--vf-heading);font-weight:var(--weight-semibold);font-size:clamp(17px,3.4vw,21px);letter-spacing:var(--tracking-tight);color:var(--text-strong)">
+            <span>¿Voy a quedar amarrado a una suscripción?</span>
+            <i class="ph-light ph-caret-down" style="flex:none;font-size:18px;color:var(--text-muted);margin-top:4px;transition:transform var(--dur-base) var(--ease-fluid);transform:{{ rot5 }}"></i>
+          </div>
+          <sc-if value="{{ open5 }}" hint-placeholder-val="{{ false }}">
+            <p style="padding:0 var(--space-1) var(--space-6);max-width:64ch;font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-muted)">No. Cancelas desde la app cuando quieras, en un clic, sin escribir correos ni hablar con nadie. El primer mes va incluido en los $40; a partir del segundo son $20 mensuales, y el día que no lo quieras lo cancelas.</p>
+          </sc-if>
+        </div>
+        <div style="border-top:1px solid var(--border-subtle)">
+          <div onClick="{{ toggle6 }}" style="display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);padding:var(--space-5) var(--space-1);cursor:pointer;font-family:var(--font-heading);font-variation-settings:var(--vf-heading);font-weight:var(--weight-semibold);font-size:clamp(17px,3.4vw,21px);letter-spacing:var(--tracking-tight);color:var(--text-strong)">
+            <span>¿Cuánto voy a bajar y en cuánto tiempo?</span>
+            <i class="ph-light ph-caret-down" style="flex:none;font-size:18px;color:var(--text-muted);margin-top:4px;transition:transform var(--dur-base) var(--ease-fluid);transform:{{ rot6 }}"></i>
+          </div>
+          <sc-if value="{{ open6 }}" hint-placeholder-val="{{ false }}">
+            <p style="padding:0 var(--space-1) var(--space-6);max-width:64ch;font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-muted)">Es dificil prometerte un numero exacto ya que varia entre persona y persona. Pero perder entre 1 y 2% de tu peso corporal al mes es un objetivo realizable.</p>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="ecc-separador" aria-hidden="true" style="position:relative;z-index:3;height:0;display:flex;justify-content:center;align-items:center"><span style="position:absolute;left:50%;top:0;width:min(980px,86%);height:1px;transform:translateX(-50%);background:linear-gradient(90deg,rgba(1,127,167,0) 0%,rgba(1,127,167,.45) 35%,rgba(1,127,167,.45) 65%,rgba(1,127,167,0) 100%)"></span><svg width="26" height="26" viewBox="0 0 24 24" style="position:relative;display:block;flex:none;filter:drop-shadow(0 0 8px rgba(35,211,255,.55))"><polygon points="12,2 21,7 21,17 12,22 3,17 3,7" fill="#FFFFFF" stroke="#017FA7" stroke-width="1.4"></polygon><circle cx="12" cy="12" r="2.6" fill="#23D3FF"></circle></svg></div>
+  <section id="empezar" class="ecc-atmos" data-screen-label="06 Cierre" style="padding:var(--gap-section) 0">
+    <div class="ecc-pad" style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:var(--space-10)">
+      <div class="ecc-reveal" style="display:flex;flex-direction:column;align-items:center;gap:var(--space-5);text-align:center;max-width:60ch">
+        <h2 style="font-size:clamp(28px,5.4vw,44px);max-width:24ch;color:var(--text-on-dark)">Transforma tu Cuerpo</h2>
+        <p style="font-family:var(--font-heading);font-variation-settings:var(--vf-heading);font-size:clamp(18px,3.2vw,23px);font-weight:var(--weight-semibold);letter-spacing:var(--tracking-tight);line-height:1.35;color:var(--text-on-dark)">No te falta un plan nuevo de entrenamiento. Te falta entender la ciencia para crear nuevos habitos.</p>
+      </div>
+
+      <div class="ecc-split ecc-reveal ecc-reveal-2" style="grid-template-columns:1fr 1fr;align-items:stretch;width:100%">
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" data-no-video="" style="padding:var(--space-8) var(--space-6);height:100%;display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-5)">
+<!-- QUITADO: calificación "4.67 · 383 reseñas" (no era real). Volver a poner solo con reseñas verificables y su fuente. -->
+            <span class="ecc-label" style="font-size:14px;letter-spacing:.14em;color:var(--cyan-300)">LO QUE RECIBES HOY</span>
+            <div style="display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:var(--space-3)">
+              <div style="display:flex;align-items:center;justify-content:flex-start;gap:var(--space-3)">
+                <i class="ph-light ph-brain" style="flex:none;font-size:19px;color:var(--cyan-300)"></i>
+                <p style="font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-on-dark);font-weight:700">Curso de Neurociencia del Cambio de Habitos</p>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:flex-start;gap:var(--space-3)">
+                <i class="ph-light ph-microscope" style="flex:none;font-size:19px;color:var(--cyan-300)"></i>
+                <p style="font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-on-dark);font-weight:700">Curso de Fundamentos de Entrenamiento y Nutrición</p>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:flex-start;gap:var(--space-3)">
+                <i class="ph-light ph-barbell" style="flex:none;font-size:19px;color:var(--cyan-300)"></i>
+                <p style="font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-on-dark);font-weight:700">Rutinas de Entrenamiento y Plan de Nutricion</p>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:flex-start;gap:var(--space-3)">
+                <i class="ph-light ph-list-checks" style="flex:none;font-size:19px;color:var(--cyan-300)"></i>
+                <p style="font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-on-dark);font-weight:700">Protocolos para Dias Dificiles</p>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:flex-start;gap:var(--space-3)">
+                <i class="ph-light ph-device-mobile" style="flex:none;font-size:19px;color:var(--cyan-300)"></i>
+                <p style="font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-on-dark);font-weight:700">Aplicación de Seguimiento</p>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:flex-start;gap:var(--space-3)">
+                <i class="ph-light ph-users-three" style="flex:none;font-size:19px;color:var(--cyan-300)"></i>
+                <p style="font-size:var(--text-body-md);line-height:var(--leading-body);color:var(--text-on-dark);font-weight:700">Comunidad Privada</p>
+              </div>
+            </div>
+            <div style="margin-top:auto;width:100%;padding-top:var(--space-5);border-top:1px solid var(--border-on-dark);display:flex;flex-direction:column;align-items:center;gap:var(--space-2)">
+              <div style="align-self:stretch;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 16px;border-radius:14px;background:#0A2540;box-shadow:0 10px 30px -14px rgba(10,37,64,.5)"><span style="font-family:var(--font-body);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#FFC300;white-space:nowrap">Oferta de lanzamiento</span><span style="display:flex;align-items:flex-start;gap:10px"><span role="timer" aria-label="Tiempo restante de la oferta" style="display:flex;align-items:flex-start;gap:6px"><span style="display:flex;flex-direction:column;align-items:center;gap:3px"><span class="ecc-num" style="min-width:52px;height:44px;padding:0 8px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.3);font-family:var(--font-display);font-size:26px;font-weight:700;line-height:1;color:#FFFFFF;font-variant-numeric:tabular-nums;white-space:nowrap">{{ timerHrs }}</span><span style="font-family:var(--font-body);font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#C9D8E4">Hrs</span></span><span aria-hidden="true" style="font-family:var(--font-display);font-size:22px;font-weight:700;line-height:44px;color:#C9D8E4">:</span><span style="display:flex;flex-direction:column;align-items:center;gap:3px"><span class="ecc-num" style="min-width:52px;height:44px;padding:0 8px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.3);font-family:var(--font-display);font-size:26px;font-weight:700;line-height:1;color:#FFFFFF;font-variant-numeric:tabular-nums;white-space:nowrap">{{ timerMin }}</span><span style="font-family:var(--font-body);font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#C9D8E4">Min</span></span><span aria-hidden="true" style="font-family:var(--font-display);font-size:22px;font-weight:700;line-height:44px;color:#C9D8E4">:</span><span style="display:flex;flex-direction:column;align-items:center;gap:3px"><span class="ecc-num" style="min-width:52px;height:44px;padding:0 8px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.3);font-family:var(--font-display);font-size:26px;font-weight:700;line-height:1;color:#FFFFFF;font-variant-numeric:tabular-nums;white-space:nowrap">{{ timerSeg }}</span><span style="font-family:var(--font-body);font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#C9D8E4">Seg</span></span></span></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ecc-bezel ecc-bezel-on-dark" style="min-width:0">
+          <div class="ecc-bezel-core ecc-bezel-core-on-dark" data-no-video="" style="padding:var(--space-8) var(--space-6);height:100%;display:flex;flex-direction:column;justify-content:center;gap:var(--space-5)">
+            <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:var(--space-2)">
+                <div style="display:flex;align-items:center;gap:var(--space-3)">
+                  <span class="ecc-num" style="font-family:var(--font-mono);font-size:20px;font-weight:500;letter-spacing:.02em;text-decoration:line-through;color:var(--text-on-dark-muted)">$67</span>
+                  <span class="ecc-num" style="display:inline-flex;align-items:center;padding:4px 11px;border-radius:999px;border:1px solid var(--border-on-dark);font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text-on-dark-muted);white-space:nowrap">40% OFF</span>
+                </div>
+                <p class="ecc-num" style="display:flex;justify-content:center;align-items:flex-start;text-align:center;font-family:var(--font-display);font-variation-settings:var(--vf-display);font-size:clamp(44px,7vw,68px);font-weight:var(--weight-bold);line-height:1;letter-spacing:var(--tracking-tight);color:var(--gold-400)"><span style="display:flex;align-items:flex-start;gap:2px">$40</span></p>
+              </div>
+              <p style="font-size:var(--text-body-md);line-height:var(--leading-body);text-align:center;color:var(--text-on-dark)">Menos que una consulta con un nutricionista</p>
+              <p style="font-size:var(--text-body-md);line-height:var(--leading-body);text-align:center;color:var(--text-on-dark)">Menos que una membresia mensual en el gimnasio</p>
+            </div>
+            <a href="#" class="ecc-cta"><span>REGISTRATE EN LA LISTA DE ESPERA</span><span class="ecc-cta-ico"><i class="ph-light ph-arrow-right" style="font-size:17px"></i></span></a>
+            <div style="display:flex;flex-direction:column;gap:var(--space-2);padding-top:var(--space-4);border-top:1px solid var(--border-on-dark)">
+              <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px">
+                <span style="display:inline-flex;align-items:center;gap:8px;padding:8px 15px 8px 11px;border-radius:999px;border:1px solid rgba(109,205,242,.55);background:#0A2540;box-shadow:0 6px 18px rgba(10,37,64,.22)">
+                  <i class="ph-fill ph-shield-check" style="flex:none;font-size:18px;color:#6DCDF2"></i>
+                  <span style="font-family:var(--font-body);font-size:13px;font-weight:700;letter-spacing:.01em;line-height:1.2;color:#FFFFFF;white-space:nowrap">Garantía 30 días</span>
+                </span>
+                <span style="display:inline-flex;align-items:center;gap:8px;padding:8px 15px 8px 11px;border-radius:999px;border:1px solid rgba(109,205,242,.55);background:#0A2540;box-shadow:0 6px 18px rgba(10,37,64,.22)">
+                  <i class="ph-fill ph-lightning" style="flex:none;font-size:18px;color:#6DCDF2"></i>
+                  <span style="font-family:var(--font-body);font-size:13px;font-weight:700;letter-spacing:.01em;line-height:1.2;color:#FFFFFF;white-space:nowrap">Acceso inmediato</span>
+                </span>
+                <span style="display:inline-flex;align-items:center;gap:8px;padding:8px 15px 8px 11px;border-radius:999px;border:1px solid rgba(109,205,242,.55);background:#0A2540;box-shadow:0 6px 18px rgba(10,37,64,.22)">
+                  <i class="ph-fill ph-arrow-u-up-left" style="flex:none;font-size:18px;color:#6DCDF2"></i>
+                  <span style="font-family:var(--font-body);font-size:13px;font-weight:700;letter-spacing:.01em;line-height:1.2;color:#FFFFFF;white-space:nowrap">Cancela cuando quieras</span>
+                </span>
+              </div>
+              <p style="font-size:12px;line-height:1.5;text-align:center;color:var(--text-on-dark)">Si no te sirve, te devolvemos el 100% de tu dinero.</p>
+              <p style="font-size:12px;line-height:1.5;text-align:center;color:var(--text-on-dark)">*Después del primer mes, la aplicación continúa por $20 al mes.</p>
+              <div class="ecc-pago"><span class="ecc-pago-candado"><i class="ph-fill ph-lock-simple"></i></span><span class="ecc-pago-txt"><strong>Pago 100% seguro</strong><span>procesado por</span></span><img class="ecc-pago-logo" src="assets/mercadopago.png" alt="Mercado Pago"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="ecc-reveal" style="max-width:46ch;text-align:center;font-family:var(--font-heading);font-variation-settings:var(--vf-heading);font-size:clamp(18px,3.2vw,23px);font-weight:var(--weight-semibold);letter-spacing:var(--tracking-tight);line-height:1.35;color:var(--text-on-dark)"><span class="ecc-cierre-l1">Deja de <strong>empezar de nuevo</strong>.</span><br>Haz un <span class="ecc-hl">cambio real</span> <strong>una vez por todas</strong>.</p>
+    </div>
+  </section>
+
+  <footer data-screen-label="Footer" style="background:var(--ground-void);color:var(--text-on-dark-muted);padding:var(--space-16) 0 var(--space-10)">
+    <div class="ecc-pad" style="max-width:var(--container-max);margin:0 auto;display:flex;flex-direction:column;gap:var(--space-8)">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-6)">
+        <x-import component-from-global-scope="EntrenaConCienciaDesignSystem_858058.Logo" variant="horizontal" theme="dark" size="{{ 34 }}" src="assets/isotipo-ecc.png" hint-size="170px,36px"></x-import>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:var(--space-3)">
+          <a href="mailto:contacto@entrenaciencia.com" style="font-family:var(--font-mono);font-size:var(--text-caption);letter-spacing:var(--tracking-mono);color:var(--cyan-300)">contacto@entrenaciencia.com</a>
+          <!-- Redes sociales --><div style="display:flex;align-items:center;gap:10px"><a href="https://www.instagram.com/entrena.con.ciencia/" target="_blank" rel="noopener" aria-label="Instagram de Entrena con Ciencia" style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:999px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);color:#FFFFFF"><i class="ph-fill ph-instagram-logo" style="font-size:22px"></i></a><a href="https://www.tiktok.com/@entrenaciencia" target="_blank" rel="noopener" aria-label="TikTok de Entrena con Ciencia" style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:999px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);color:#FFFFFF"><i class="ph-fill ph-tiktok-logo" style="font-size:22px"></i></a></div>
+        </div>
+      </div>
+      <p style="max-width:70ch;font-size:var(--text-caption);line-height:var(--leading-body);color:var(--text-on-dark)">Este contenido es informativo y educativo y no reemplaza la consulta con tu médico. Los resultados varían entre personas. Si tienes una condición de salud o tomas medicación, consulta a tu especialista antes de cambiar tu alimentación o entrenamiento.</p>
+      <div style="border-top:1px solid var(--border-on-dark);padding-top:var(--space-5);display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--space-4);font-family:var(--font-mono);font-size:var(--text-caption);color:var(--text-on-dark)">
+        <span>© 2026 Entrena con Ciencia</span>
+        <span>Términos · Privacidad · Cancelación</span>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;faqMostrarTodas&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;FAQ&quot;},&quot;faqSingleOpen&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;FAQ&quot;}}">
+class Component extends DCLogic {
+  state = { open: {}, ahora: Date.now() };
+
+  componentDidMount(){
+    document.body.setAttribute('data-ecc-motion','');
+    // Cierre de la oferta de lanzamiento: una fecha fija, igual para todos los visitantes.
+    // Cambiar solo esta línea (hora de Lima, UTC-5). Al llegar a cero, el contador queda en 0.
+    const FIN_OFERTA='2026-10-12T23:59:00-05:00';
+    this.limiteOferta=Date.parse(FIN_OFERTA);
+    this.tick=setInterval(()=>this.setState({ahora:Date.now()}),1000);
+    if(!document.querySelector('.ecc-grain-layer')){
+      const g=document.createElement('div');
+      g.className='ecc-grain-layer';
+      document.body.appendChild(g);
+    }
+    const io=new IntersectionObserver(entries=>{
+      entries.forEach(e=>{
+        if(!e.isIntersecting) return;
+        e.target.classList.add('is-in');
+        setTimeout(()=>e.target.classList.add('is-done'),1000);
+        io.unobserve(e.target);
+      });
+    },{rootMargin:'0px 0px -10% 0px',threshold:0.06});
+    const scan=()=>{
+      document.querySelectorAll('.ecc-reveal:not(.is-in)').forEach(n=>{
+        // Lo que ya esta en pantalla al montar se muestra sin viaje: evita el parpadeo
+        // sobre el pliegue, porque el observer resuelve despues del primer paint.
+        if(n.getBoundingClientRect().top < window.innerHeight*0.92){
+          n.classList.add('is-in','is-done');
+        } else {
+          io.observe(n);
+        }
+      });
+    };
+    scan();
+    this._io=io;
+    this._mo=new MutationObserver(()=>{
+      clearTimeout(this._t);
+      this._t=setTimeout(()=>{scan();this._setupMedia();this._applyText();this._applyLinks();if(this._edit)this._setEdit(true);},120);
+    });
+    this._mo.observe(document.body,{childList:true,subtree:true});
+    try{
+      Object.keys(localStorage)
+        .filter(k=>k.indexOf('ecc-lp-text:')===0||k.indexOf('ecc-lp-href:')===0||k.indexOf('ecc-lp-t:')===0)
+        .forEach(k=>localStorage.removeItem(k));
+    }catch(e){}
+    this._setupMedia();
+    this._applyText();
+    this._applyLinks();
+    this._buildBar();
+    this._setEdit(false);
+  }
+
+  componentWillUnmount(){
+    this._io&&this._io.disconnect();
+    this._mo&&this._mo.disconnect();
+  }
+
+  _lsGet(k,d){try{const v=localStorage.getItem(k);return v===null?d:v}catch(e){return d}}
+  _lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+
+  _embedUrl(u){
+    const y=u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{6,})/);
+    if(y) return 'https://www.youtube.com/embed/'+y[1];
+    const v=u.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+    if(v) return 'https://player.vimeo.com/video/'+v[1];
+    return u;
+  }
+
+  _setupMedia(){
+    document.querySelectorAll('image-slot').forEach(slot=>{
+      const box=slot.parentElement;
+      if(!box) return;
+      const id=slot.id||'media';
+      // El boton mide ~79 px y taparia una miniatura de 69 px. La decision va por
+      // atributo, no por medida: en el primer pase la grilla todavia no resolvio y
+      // cualquier ancho medido ahi es falso.
+      // Sin boton (VSL, o donde el usuario no lo quiere) el video se carga
+      // arrastrando el archivo al recuadro; las imagenes las toma image-slot.
+      if(!box.dataset.eccDrop){
+        box.dataset.eccDrop='1';
+        box.addEventListener('dragover',e=>{
+          const it=e.dataTransfer&&e.dataTransfer.items&&e.dataTransfer.items[0];
+          if(it&&/^video\//.test(it.type||'')){ e.preventDefault(); e.dataTransfer.dropEffect='copy' }
+        });
+        box.addEventListener('drop',e=>{
+          const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+          if(!f||!/^video\//.test(f.type||'')) return;
+          e.preventDefault(); e.stopPropagation();
+          this._lsSet('ecc-lp-video:'+id,'');
+          this._putFile(id,f).then(()=>this._renderMedia(box,slot,id));
+        });
+      }
+      if(box.hasAttribute('data-no-video')){
+        const old=box.querySelector('[data-ecc-vidbtn]');
+        if(old) old.remove();
+        this._renderMedia(box,slot,id);
+        return;
+      }
+      if(!box.dataset.eccMedia){
+        box.dataset.eccMedia='1';
+        const tools=document.createElement('div');
+        tools.setAttribute('data-ecc-tools','');
+        tools.style.cssText='position:absolute;bottom:12px;right:12px;z-index:4;display:flex;align-items:center;gap:6px';
+        const inp=document.createElement('input');
+        inp.type='file';
+        inp.accept='image/*,video/*';
+        inp.style.display='none';
+        inp.onchange=()=>{
+          const f=inp.files&&inp.files[0];
+          inp.value='';
+          if(!f) return;
+          this._lsSet('ecc-lp-video:'+id,'');
+          this._putFile(id,f).then(()=>this._renderMedia(box,slot,id));
+        };
+        const btn=document.createElement('button');
+        btn.type='button';
+        btn.setAttribute('data-ecc-vidbtn','');
+        btn.innerHTML='<i class="ph-light ph-upload-simple" style="font-size:13px"></i><span>Subir video o foto</span>';
+        btn.style.cssText='display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 14px;border:1px solid rgba(255,255,255,.22);border-radius:999px;background:rgba(6,12,24,.74);color:#fff;font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer;box-shadow:var(--shadow-sm)';
+        btn.onclick=()=>inp.click();
+        tools.appendChild(inp);
+        tools.appendChild(btn);
+        box.appendChild(tools);
+      }
+      this._renderMedia(box,slot,id);
+    });
+  }
+
+  _db(){
+    if(this._dbp) return this._dbp;
+    this._dbp=new Promise((res,rej)=>{
+      const r=indexedDB.open('ecc-lp-media',1);
+      r.onupgradeneeded=()=>{ r.result.createObjectStore('files') };
+      r.onsuccess=()=>res(r.result);
+      r.onerror=()=>rej(r.error);
+    });
+    return this._dbp;
+  }
+  _putFile(id,file){
+    return this._db().then(db=>new Promise((res,rej)=>{
+      const t=db.transaction('files','readwrite');
+      t.objectStore('files').put(file,id);
+      t.oncomplete=()=>res(); t.onerror=()=>rej(t.error);
+    })).catch(()=>{});
+  }
+  _getFile(id){
+    return this._db().then(db=>new Promise(res=>{
+      const t=db.transaction('files','readonly');
+      const q=t.objectStore('files').get(id);
+      q.onsuccess=()=>res(q.result||null); q.onerror=()=>res(null);
+    })).catch(()=>null);
+  }
+  _delFile(id){
+    return this._db().then(db=>new Promise(res=>{
+      const t=db.transaction('files','readwrite');
+      t.objectStore('files').delete(id);
+      t.oncomplete=()=>res(); t.onerror=()=>res();
+    })).catch(()=>{});
+  }
+
+  _renderMedia(box,slot,id){
+    const url=this._lsGet('ecc-lp-video:'+id,'').trim();
+    if(url){
+      this._paintMedia(box,slot,id,url,/\.(mp4|webm|mov)(\?|$)/i.test(url)?'video':'embed');
+      return;
+    }
+    this._getFile(id).then(f=>{
+      if(!f){ this._paintMedia(box,slot,id,null); return; }
+      const src=URL.createObjectURL(f);
+      this._paintMedia(box,slot,id,src,/^video\//.test(f.type||'')?'video':'image');
+    });
+  }
+
+  _paintMedia(box,slot,id,src,kind){
+    let holder=box.querySelector('[data-ecc-video]');
+    const tools=box.querySelector('[data-ecc-tools]');
+    const oldClear=tools&&tools.querySelector('[data-ecc-clear]');
+    if(!src){
+      if(holder) holder.remove();
+      if(oldClear) oldClear.remove();
+      slot.style.display='';
+      if(box.dataset.eccFitSaved){
+        box.style.minHeight=box.dataset.eccFitMinH||'';
+        box.style.height=box.dataset.eccFitH||'';
+        if(box.parentElement) box.parentElement.style.alignSelf='';
+        delete box.dataset.eccFitSaved;
+      }
+      return;
+    }
+    slot.style.display='none';
+    if(!holder){
+      holder=document.createElement('div');
+      holder.setAttribute('data-ecc-video','');
+      holder.style.cssText='position:absolute;inset:0;z-index:2;background:var(--ground-void)';
+      box.insertBefore(holder,box.firstChild);
+    }
+    holder.innerHTML=kind==='video'
+      ? '<video src="'+src+'" controls playsinline style="width:100%;height:100%;object-fit:contain;background:var(--ground-void);display:block"></video>'
+      : kind==='image'
+        ? '<img src="'+src+'" alt="" style="width:100%;height:100%;object-fit:contain;background:var(--ground-void);display:block">'
+        : '<iframe src="'+this._embedUrl(src)+'" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:0;display:block"></iframe>';
+    // Con foto la caja se ajusta al contorno de la imagen: sin recorte y sin franjas.
+    if(kind==='image'){
+      if(!box.dataset.eccFitSaved){
+        box.dataset.eccFitSaved='1';
+        box.dataset.eccFitMinH=box.style.minHeight||'';
+        box.dataset.eccFitH=box.style.height||'';
+      }
+      holder.style.position='relative';
+      holder.style.inset='auto';
+      box.style.minHeight='0';
+      box.style.height='auto';
+      if(box.parentElement) box.parentElement.style.alignSelf='start';
+      const im=holder.querySelector('img');
+      if(im) im.style.cssText='width:100%;height:auto;display:block';
+    }
+    if(tools&&!oldClear){
+      const clr=document.createElement('button');
+      clr.type='button';
+      clr.setAttribute('data-ecc-clear','');
+      clr.title='Quitar';
+      clr.innerHTML='<i class="ph-light ph-x" style="font-size:13px"></i>';
+      clr.style.cssText='display:grid;place-items:center;width:32px;height:32px;border:1px solid rgba(255,255,255,.22);border-radius:999px;background:rgba(6,12,24,.74);color:#fff;cursor:pointer';
+      clr.onclick=()=>{
+        this._lsSet('ecc-lp-video:'+id,'');
+        this._delFile(id).then(()=>this._renderMedia(box,slot,id));
+      };
+      tools.appendChild(clr);
+    }
+  }
+
+  _editables(){
+    const out=[];
+    document.querySelectorAll('h1,h2,h3,h4,h5,h6,p,span,li,a,strong,em,small,label,div,td,th,figcaption,blockquote').forEach(el=>{
+      if(el.closest('image-slot')||el.closest('[data-ecc-video]')||el.closest('[data-ecc-bar]')) return;
+      if(!el.childNodes.length||!el.textContent.trim()) return;
+      let onlyText=true;
+      el.childNodes.forEach(n=>{ if(n.nodeType!==3) onlyText=false; });
+      if(onlyText) out.push(el);
+    });
+    return out;
+  }
+
+  _links(){
+    return Array.prototype.filter.call(document.querySelectorAll('a[href]'),a=>!a.closest('[data-ecc-bar]'));
+  }
+
+  _applyLinks(){
+    this._links().forEach(a=>{
+      const key='ecc-lp-h:'+this._pathKey(a);
+      a.dataset.eccHref=key;
+      const saved=this._lsGet(key,null);
+      if(saved) a.setAttribute('href',saved);
+      if(a.dataset.eccLinkWired) return;
+      a.dataset.eccLinkWired='1';
+      a.addEventListener('click',e=>{
+        if(!this._edit) return;
+        e.preventDefault();
+        if(!(e.metaKey||e.ctrlKey||e.altKey)) return;
+        this._promptHref(a);
+      });
+      a.addEventListener('contextmenu',e=>{
+        if(!this._edit) return;
+        e.preventDefault();
+        this._promptHref(a);
+      });
+    });
+  }
+
+  _promptHref(a){
+    const key=a.dataset.eccHref;
+    const next=window.prompt('Destino del enlace (URL, #ancla, mailto: o tel:)',this._lsGet(key,a.getAttribute('href')||''));
+    if(next===null) return;
+    a.setAttribute('href',next.trim());
+    this._lsSet(key,next.trim());
+  }
+
+  _pathKey(el){
+    // Clave estructural (cadena de nth-child), no un indice plano: abrir una FAQ o
+    // agregar un bloque desplaza los indices y el texto guardado caeria en otro elemento.
+    const parts=[];
+    let n=el;
+    while(n&&n!==document.body){
+      const p=n.parentNode;
+      if(!p) break;
+      let i=1,s=n;
+      while((s=s.previousElementSibling)) i++;
+      parts.unshift(n.tagName+i);
+      n=p;
+    }
+    return 'ecc-lp-t3:'+parts.join('>');
+  }
+
+  _applyText(){
+    this._editables().forEach(el=>{
+      const key=this._pathKey(el);
+      el.dataset.eccKey=key;
+      if(!el.dataset.eccOrig) el.dataset.eccOrig=el.textContent;
+      // Se guarda {orig,value}: la clave estructural sola no basta, porque al
+      // reestructurar la pagina una ruta vieja puede coincidir con otro elemento y
+      // sobreescribir el copy autorado. Solo se restaura si el texto de origen calza.
+      let rec=null;
+      try{ rec=JSON.parse(this._lsGet(key,'null')); }catch(e){ rec=null; }
+      if(rec&&typeof rec==='object'&&typeof rec.value==='string'){
+        if(rec.orig===el.dataset.eccOrig&&rec.value.trim()){
+          if(rec.value!==el.textContent) el.textContent=rec.value;
+        } else {
+          try{localStorage.removeItem(key)}catch(e){}
+        }
+      } else if(rec!==null){
+        try{localStorage.removeItem(key)}catch(e){}
+      }
+      if(!el.textContent.trim()) el.textContent=el.dataset.eccOrig;
+      if(el.dataset.eccWired) return;
+      el.dataset.eccWired='1';
+      const save=()=>{
+        const v=el.textContent;
+        if(!v.trim()){
+          try{localStorage.removeItem(el.dataset.eccKey)}catch(e){}
+          el.textContent=el.dataset.eccOrig;
+          return;
+        }
+        this._lsSet(el.dataset.eccKey,JSON.stringify({orig:el.dataset.eccOrig,value:v}));
+      };
+      el.addEventListener('blur',save);
+      el.addEventListener('input',()=>{
+        clearTimeout(el._sv);
+        el._sv=setTimeout(()=>{
+          if(el.textContent.trim()) this._lsSet(el.dataset.eccKey,JSON.stringify({orig:el.dataset.eccOrig,value:el.textContent}));
+        },400);
+      });
+      el.addEventListener('keydown',e=>{ if(e.key==='Escape') el.blur(); });
+    });
+  }
+
+  _setEdit(on){
+    this._edit=on;
+    document.body.classList.toggle('ecc-editing',on);
+    this._lsSet('ecc-lp-edit',on?'1':'0');
+    this._editables().forEach(el=>{
+      if(on){
+        el.setAttribute('contenteditable','plaintext-only');
+        el.style.outline='1px dashed rgba(109,205,242,.5)';
+        el.style.outlineOffset='4px';
+      } else {
+        el.removeAttribute('contenteditable');
+        el.style.outline='';
+        el.style.outlineOffset='';
+      }
+    });
+    this._links().forEach(a=>{ a.style.cursor=on?'context-menu':''; });
+    if(this._bar){
+      this._bar.querySelector('[data-ecc-toggle] span').textContent=on?'Edicion: ON':'Edicion: OFF';
+      const tg=this._bar.querySelector('[data-ecc-toggle]'); tg.style.background=on?'var(--gold-400)':'transparent'; tg.style.color=on?'#0C1A33':'#F8FAFD';
+      const hint=this._bar.querySelector('[data-ecc-hint]');
+      if(hint) hint.style.display=on?'block':'none';
+    }
+  }
+
+  _buildBar(){
+    const old=document.querySelector('[data-ecc-bar]');
+    if(old&&old.dataset.eccBarV==='2'){ this._bar=old; return; }
+    if(old) old.remove();
+    const bar=document.createElement('div');
+    bar.setAttribute('data-ecc-bar','');
+    bar.dataset.eccBarV='2';
+    bar.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:8px;padding:8px;border-radius:999px;background:rgba(9,18,36,.86);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.13);box-shadow:var(--shadow-md)';
+    const mk=(html,attr)=>{
+      const b=document.createElement('button');
+      b.type='button';
+      if(attr) b.setAttribute(attr,'');
+      b.innerHTML=html;
+      b.style.cssText='display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:#F8FAFD;font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer';
+      return b;
+    };
+    const toggle=mk('<i class="ph-light ph-pencil-simple" style="font-size:14px"></i><span>Edicion: ON</span>','data-ecc-toggle');
+    toggle.style.background='var(--gold-400)';
+    toggle.style.color='#0C1A33';
+    toggle.onclick=()=>{
+      const on=!this._edit;
+      toggle.style.background=on?'var(--gold-400)':'transparent';
+      toggle.style.color=on?'#0C1A33':'#F8FAFD';
+      this._setEdit(on);
+    };
+    const reset=mk('<i class="ph-light ph-arrow-counter-clockwise" style="font-size:14px"></i><span>Restablecer</span>');
+    reset.onclick=()=>{
+      if(!window.confirm('Borrar todos los textos y videos que escribiste y volver al original?')) return;
+      try{
+        Object.keys(localStorage).filter(k=>k.indexOf('ecc-lp-')===0).forEach(k=>localStorage.removeItem(k));
+      }catch(e){}
+      location.reload();
+    };
+    bar.appendChild(toggle);
+    bar.appendChild(reset);
+    const hint=document.createElement('div');
+    hint.setAttribute('data-ecc-hint','');
+    hint.style.cssText='position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);width:max-content;max-width:min(88vw,560px);padding:10px 16px;border-radius:14px;background:rgba(9,18,36,.86);border:1px solid rgba(255,255,255,.13);color:rgba(248,250,253,.72);font-family:var(--font-mono);font-size:11px;line-height:1.6;letter-spacing:.04em;text-align:center;pointer-events:none';
+    hint.textContent='Clic en cualquier texto para escribir · Clic derecho en un enlace para cambiar su destino · Arrastra una imagen a un recuadro o usa SUBIR VIDEO O FOTO';
+    bar.appendChild(hint);
+    document.body.appendChild(bar);
+    this._bar=bar;
+  }
+
+  componentWillUnmount(){ if(this.tick) clearInterval(this.tick); }
+
+  renderVals(){
+    const open=this.state.open||{};
+    const pad=n=>String(n).padStart(2,'0');
+    const resta=Math.max(0,(this.limiteOferta||0)-(this.state.ahora||Date.now()));
+    const dd=Math.floor(resta/864e5);
+    const hh=Math.floor(resta%864e5/36e5);
+    const mm=Math.floor(resta%36e5/6e4);
+    const ss=Math.floor(resta%6e4/1000);
+    const cuentaRegresiva=(dd>0?dd+'d ':'')+pad(hh)+':'+pad(mm)+':'+pad(ss);
+    const single=this.props.faqSingleOpen ?? true;
+    const scroll=dir=>{
+      const el=document.getElementById('ecc-carrusel');
+      if(!el) return;
+      const card=el.firstElementChild;
+      const step=card?card.getBoundingClientRect().width+12:240;
+      el.scrollBy({left:dir*step,behavior:'smooth'});
+    };
+    const timerHrs=pad(Math.floor(resta/36e5)), timerMin=pad(mm), timerSeg=pad(ss);
+    const testiIdx=Math.floor((this.state.ahora||Date.now())/5000)%3, testiTrack='translateX(-'+(testiIdx*100)+'%)';
+    const vals={ cuentaRegresiva, timerHrs, timerMin, timerSeg, testiTrack, carouselPrev:()=>scroll(-1), carouselNext:()=>scroll(1) };
+    for(let i=0;i<7;i++){
+      const k=i;
+      const abierta=!!open[k]||!!this.props.faqMostrarTodas;
+      vals['open'+i]=abierta;
+      vals['rot'+i]=abierta?'rotate(180deg)':'rotate(0deg)';
+      vals['toggle'+i]=()=>this.setState(s=>{
+        const cur=s.open||{};
+        const next=single?{}:Object.assign({},cur);
+        next[k]=!cur[k];
+        return {open:next};
+      });
+    }
+    return vals;
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+:root{
+/* --- Navy: color base de la marca, tomado del fondo del isotipo (navy-700) --- */
+--navy-975:#060C18;--navy-950:#0B1425;--navy-900:#122340;--navy-850:#172C50;--navy-800:#1B3560;--navy-700:#224277;--navy-600:#2C5391;--navy-500:#3A67AE;--navy-400:#6E8FC8;--navy-300:#A9BEDD;--navy-200:#D3DEEE;--navy-100:#E7EEF8;--navy-050:#F2F6FC;--navy-025:#F8FAFD;
+/* --- Cyan: color del trazo del isotipo --- */
+--cyan-200:#C7F6FF;--cyan-300:#9AF1FE;--cyan-400:#6DCDF2;--cyan-500:#3EA9D6;--cyan-600:#1F7CA8;--cyan-700:#155C7F;
+/* --- Amarillo: resaltado de evidencia (cifras y hallazgos verificados).
+       gold-400 #FFC300 es el color entregado por la marca. --- */
+--gold-300:#FFD54A;--gold-400:#FFC300;--gold-500:#E0A800;--gold-600:#B88600;--gold-700:#8A6300;
+/* --- Coral: mitos y creencias falsas --- */
+--coral-300:#FFA294;--coral-400:#FF6650;--coral-500:#DE3B26;--coral-600:#A82A19;
+--white:#FFFFFF;
+
+/* --- Superficies --- */
+--surface-page:var(--navy-025);--surface-card:var(--white);--surface-inset:var(--navy-050);--surface-sunken:var(--navy-100);
+--surface-navy:var(--navy-700);--surface-deep:var(--navy-900);--surface-black:var(--navy-950);--surface-void:var(--navy-975);
+--surface-card-dark:var(--navy-850);--surface-overlay:rgba(6,12,24,.76);
+--surface-glass:rgba(255,255,255,.055);--surface-glass-strong:rgba(255,255,255,.09);
+/* Isla de navegacion: vidrio pesado, unico elemento con blur junto al overlay. */
+--surface-island:rgba(18,35,64,.72);
+
+/* --- Texto --- */
+/* Toda la escala de tinta sobre --surface-page pasa 4.5:1 (AA texto pequeno):
+   strong 17.6 · body 10.8 · muted 6.0 · faint 4.6 · link 4.5. Ningun token de texto baja de ahi. */
+--text-strong:var(--navy-950);--text-body:#2A3B57;--text-muted:#4B6182;--text-faint:#5D7396;
+--text-on-dark:var(--white);--text-on-dark-muted:#BACDE6;--text-on-dark-faint:#7C97BE;
+--text-link:var(--cyan-600);--text-link-hover:var(--navy-700);
+
+/* --- Marca y acentos semanticos --- */
+--brand-primary:var(--navy-700);--brand-mark:var(--cyan-400);
+--accent-evidence:var(--gold-400);--accent-evidence-ink:var(--navy-975);
+/* deep solo para filetes, bordes y subrayados de 2-3px. NUNCA como color de texto:
+   el amarillo oscurecido lo suficiente para leerse sobre blanco ya es marron. */
+--accent-evidence-deep:var(--gold-600);
+/* El resaltado sobre fondo claro es relleno #FFC300 con tinta navy (highlighter). */
+--evidence-fill:var(--gold-400);--evidence-fill-ink:var(--navy-975);--evidence-tint:rgba(255,195,0,.22);
+--accent-myth:var(--coral-400);--accent-myth-ink:var(--white);--accent-myth-deep:var(--coral-600);
+--accent-info:var(--cyan-400);--accent-info-ink:var(--navy-975);
+
+/* --- Bordes --- */
+--border-subtle:#E2EAF5;--border-strong:var(--navy-200);--border-ink:var(--navy-950);
+--border-on-dark:rgba(255,255,255,.13);--border-on-dark-strong:rgba(255,255,255,.28);
+--focus-ring:var(--cyan-400);
+
+/* --- Atmosfera: trama, halo y grano. Sustituyen al navy plano. --- */
+--grid-line-dark:rgba(154,241,254,.07);--grid-line-light:rgba(34,66,119,.055);
+--glow-cyan:radial-gradient(70% 55% at 18% -8%,rgba(62,169,214,.30) 0%,rgba(62,169,214,0) 68%);/* @kind other */
+--glow-gold:radial-gradient(45% 40% at 82% 104%,rgba(255,195,0,.13) 0%,rgba(255,195,0,0) 70%);/* @kind other */
+--ground-navy:linear-gradient(168deg,var(--navy-850) 0%,var(--navy-950) 52%,var(--navy-975) 100%);/* @kind other */
+--ground-void:linear-gradient(180deg,var(--navy-950) 0%,var(--navy-975) 100%);/* @kind other */
+}

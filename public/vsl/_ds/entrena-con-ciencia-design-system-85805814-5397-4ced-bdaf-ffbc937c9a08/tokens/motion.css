@@ -1,0 +1,29 @@
+/* Movimiento — fisica de resorte, nunca curvas por defecto.
+   El skill prohibe `linear` y `ease-in-out`, y prohibe el cambio de estado
+   instantaneo: todo interpola. La curva base --ease-fluid (0.32,0.72,0,1)
+   arranca rapido y frena largo, que es como se mueve una masa real. */
+:root{
+--dur-instant:120ms;/* @kind other */
+--dur-fast:240ms;/* @kind other */
+--dur-base:400ms;/* @kind other */
+--dur-slow:700ms;/* @kind other */
+--dur-reveal:900ms;/* @kind other */
+
+/* Curva canonica del sistema. Va en todo control, superficie y revelacion. */
+--ease-fluid:cubic-bezier(.32,.72,0,1);/* @kind other */
+--ease-out:cubic-bezier(.2,.8,.2,1);/* @kind other */
+--ease-entrance:cubic-bezier(.16,1,.3,1);/* @kind other */
+
+/* Escalonado de la revelacion de nav y de bloques. */
+--stagger-1:60ms;/* @kind other */
+--stagger-2:120ms;/* @kind other */
+--stagger-3:180ms;/* @kind other */
+--stagger-4:240ms;/* @kind other */
+--stagger-5:300ms;/* @kind other */
+
+/* Solo transform y opacity: son las dos propiedades que no disparan layout.
+   Nunca animar top/left/width/height. */
+--transition-control:background-color var(--dur-fast) var(--ease-fluid),color var(--dur-fast) var(--ease-fluid),border-color var(--dur-fast) var(--ease-fluid),box-shadow var(--dur-fast) var(--ease-fluid),transform var(--dur-fast) var(--ease-fluid);/* @kind other */
+--transition-surface:box-shadow var(--dur-base) var(--ease-fluid),transform var(--dur-base) var(--ease-fluid),border-color var(--dur-base) var(--ease-fluid);/* @kind other */
+--transition-fluid:transform var(--dur-slow) var(--ease-fluid),opacity var(--dur-slow) var(--ease-fluid);/* @kind other */
+}

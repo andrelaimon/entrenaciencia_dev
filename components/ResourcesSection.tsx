@@ -41,11 +41,12 @@ const resources: Resource[] = [
     href: '/calculadora',
   },
   {
-    tag: 'Próximamente',
+    tag: 'Curso',
     title: 'Curso de Fundamentos',
-    description: 'El sistema completo para transformar tu físico con base en evidencia. Sé el primero en enterarte cuando lance — y accede a precio fundador.',
+    description: 'Transforma tu cuerpo en 8 semanas con neurociencia: aprende a crear hábitos que duran, con rutinas, plan de nutrición y app de seguimiento diseñados por nuestro equipo médico.',
     actionLabel: 'Inscribirme',
     kind: 'course',
+    href: '/vsl',
     coming: true,
   },
 ];
@@ -125,7 +126,7 @@ export default function ResourcesSection() {
                 <h3>{resource.title}</h3>
                 <p>{resource.description}</p>
 
-                {resource.kind === 'internal' && resource.href ? (
+                {(resource.kind === 'internal' || resource.kind === 'course') && resource.href ? (
                   <a href={resource.href} className={actionClass}>
                     {actionContent}
                   </a>

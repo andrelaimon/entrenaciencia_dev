@@ -36,7 +36,7 @@ export default function Navbar() {
           </li>
         ))}
         <li>
-          <a href="/#recursos" className="nav-cta">
+          <a href="/vsl" className="nav-cta">
             Nuestro curso
           </a>
         </li>
@@ -68,7 +68,7 @@ export default function Navbar() {
             </a>
           ))}
           <a
-            href="/#recursos"
+            href="/vsl"
             className="mobile-menu-cta"
             onClick={() => setMenuOpen(false)}
           >
