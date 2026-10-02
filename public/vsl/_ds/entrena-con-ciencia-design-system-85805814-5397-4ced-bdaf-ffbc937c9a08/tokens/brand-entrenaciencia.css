@@ -960,3 +960,49 @@ section[data-screen-label^="03 "] .ecc-split > .ecc-bezel:has(image-slot,.ecc-vs
 @media (min-width:769px){
   html:not(:has(.m-cta-barra)) section[data-screen-label^="03 "] .ecc-split:nth-child(odd) > .ecc-bezel:has(image-slot,.ecc-vsl-play){order:1}
 }
+
+/* ======================= Móvil · ajustes de la reunión del 2 oct ======================= */
+/* Limitado a la página móvil (la única con la barra fija .m-cta-barra), salvo los resaltados y las cajitas,
+   que valen para móvil y escritorio (html:root). */
+
+/* Resaltado amarillo con fondo degradado en vez de subrayado: Safari dibuja el subrayado
+   grueso con desplazamiento negativo como una raya fina que cruza la letra. El degradado
+   pinta la misma franja (mitad inferior de las letras) igual en Safari y Chrome. */
+html:root body .ecc-hl,
+html:root body section[data-screen-label^="01"]:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7):not(#z8):not(#z9):not(#z10):not(#z11):not(#z12):not(#z13) h1 :is(.ecc-h1-acento,.ecc-h1-acento2){
+  text-decoration:none!important;
+  background-image:linear-gradient(to bottom,transparent var(--ecc-hl-desde,31%),var(--ecc-hl-color,rgba(255,195,0,.5)) var(--ecc-hl-desde,31%),var(--ecc-hl-color,rgba(255,195,0,.5)) var(--ecc-hl-hasta,59%),transparent var(--ecc-hl-hasta,59%))!important;
+  background-repeat:no-repeat;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+html:root body section[data-screen-label^="01"] h1 :is(.ecc-h1-acento,.ecc-h1-acento2){--ecc-hl-color:rgba(255,195,0,.7);--ecc-hl-desde:45%;--ecc-hl-hasta:68%}
+/* "$40": el número va en una caja flex de altura justa, así que la franja se mide sobre esa caja. */
+html:root body div:has(> span.ecc-num[style*="line-through"]) ~ p.ecc-num{
+  text-decoration:none!important;
+  background-image:linear-gradient(to bottom,transparent 28%,rgba(255,195,0,.55) 28%,rgba(255,195,0,.55) 68%,transparent 68%)!important;
+  background-repeat:no-repeat;padding-left:4px!important;padding-right:4px!important}
+
+/* Primera pantalla: menos aire sobre el título para que el video entre completo. */
+html:has(.m-cta-barra) body section[data-screen-label^="01"] > .ecc-split{padding-top:var(--space-2)!important}
+
+/* "Que incluye el programa" (las 6 cajitas): todas las filas del mismo alto. */
+html:root #ecc-carrusel{grid-auto-rows:1fr}
+
+/* Testimonios en video: carrusel horizontal que se desliza, con el siguiente asomando,
+   en vez de tres videos verticales apilados (≈2.000 px de scroll). */
+html:has(.m-cta-barra) body section[data-screen-label^="04b"] .ecc-pad > div[style*="grid"]{
+  display:flex!important;gap:var(--space-3)!important;overflow-x:auto;scroll-snap-type:x mandatory;
+  margin:0 calc(-1 * var(--space-4));padding:0 var(--space-4) var(--space-2);scroll-padding:0 var(--space-4);
+  -webkit-overflow-scrolling:touch;scrollbar-width:none}
+html:has(.m-cta-barra) body section[data-screen-label^="04b"] .ecc-pad > div[style*="grid"]::-webkit-scrollbar{display:none}
+html:has(.m-cta-barra) body section[data-screen-label^="04b"] .ecc-pad > div[style*="grid"] > .ecc-bezel{flex:0 0 68%;scroll-snap-align:start}
+
+/* Final de la página: el espacio que reserva la barra fija va dentro del pie oscuro,
+   no como franja clara debajo de él. */
+html:has(.m-cta-barra) div:has(> footer[data-screen-label="Footer"]){padding-bottom:0!important}
+html:has(.m-cta-barra) footer[data-screen-label="Footer"]{padding-bottom:calc(var(--space-10) + 96px)!important}
+
+/* Botón "Regístrate en la lista de espera": en una sola línea con la flecha pegada al texto.
+   A 14px no entraba dentro de la caja del precio (308px) y se partía en dos líneas. */
+@media (min-width:375px){
+  html:has(.m-cta-barra) body .ecc-cta{padding-left:16px!important;padding-right:20px!important;gap:8px!important;justify-content:center!important}
+  html:has(.m-cta-barra) body .ecc-cta > span:first-child{white-space:nowrap;font-size:13px;letter-spacing:.05em}
+}
