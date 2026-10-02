@@ -970,14 +970,14 @@ section[data-screen-label^="03 "] .ecc-split > .ecc-bezel:has(image-slot,.ecc-vs
 html:has(.m-cta-barra) body .ecc-hl,
 html:has(.m-cta-barra) body section[data-screen-label^="01"]:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7):not(#z8):not(#z9):not(#z10):not(#z11):not(#z12):not(#z13) h1 :is(.ecc-h1-acento,.ecc-h1-acento2){
   text-decoration:none!important;
-  background-image:linear-gradient(to bottom,transparent 56%,var(--ecc-hl-color,rgba(255,195,0,.5)) 56%,var(--ecc-hl-color,rgba(255,195,0,.5)) 82%,transparent 82%)!important;
+  background-image:linear-gradient(to bottom,transparent var(--ecc-hl-desde,31%),var(--ecc-hl-color,rgba(255,195,0,.5)) var(--ecc-hl-desde,31%),var(--ecc-hl-color,rgba(255,195,0,.5)) var(--ecc-hl-hasta,59%),transparent var(--ecc-hl-hasta,59%))!important;
   background-repeat:no-repeat;-webkit-box-decoration-break:clone;box-decoration-break:clone}
-html:has(.m-cta-barra) body section[data-screen-label^="01"] h1 :is(.ecc-h1-acento,.ecc-h1-acento2){--ecc-hl-color:rgba(255,195,0,.7)}
+html:has(.m-cta-barra) body section[data-screen-label^="01"] h1 :is(.ecc-h1-acento,.ecc-h1-acento2){--ecc-hl-color:rgba(255,195,0,.7);--ecc-hl-desde:45%;--ecc-hl-hasta:68%}
 /* "$40": el número va en una caja flex de altura justa, así que la franja se mide sobre esa caja. */
 html:has(.m-cta-barra) body div:has(> span.ecc-num[style*="line-through"]) ~ p.ecc-num{
   text-decoration:none!important;
-  background-image:linear-gradient(to bottom,transparent 58%,rgba(255,195,0,.55) 58%,rgba(255,195,0,.55) 88%,transparent 88%)!important;
-  background-repeat:no-repeat}
+  background-image:linear-gradient(to bottom,transparent 28%,rgba(255,195,0,.55) 28%,rgba(255,195,0,.55) 68%,transparent 68%)!important;
+  background-repeat:no-repeat;padding-left:4px!important;padding-right:4px!important}
 
 /* Primera pantalla: menos aire sobre el título para que el video entre completo. */
 html:has(.m-cta-barra) body section[data-screen-label^="01"] > .ecc-split{padding-top:var(--space-2)!important}
@@ -998,3 +998,10 @@ html:has(.m-cta-barra) body section[data-screen-label^="04b"] .ecc-pad > div[sty
    no como franja clara debajo de él. */
 html:has(.m-cta-barra) div:has(> footer[data-screen-label="Footer"]){padding-bottom:0!important}
 html:has(.m-cta-barra) footer[data-screen-label="Footer"]{padding-bottom:calc(var(--space-10) + 96px)!important}
+
+/* Botón "Regístrate en la lista de espera": en una sola línea con la flecha pegada al texto.
+   A 14px no entraba dentro de la caja del precio (308px) y se partía en dos líneas. */
+@media (min-width:375px){
+  html:has(.m-cta-barra) body .ecc-cta{padding-left:16px!important;padding-right:20px!important;gap:8px!important;justify-content:center!important}
+  html:has(.m-cta-barra) body .ecc-cta > span:first-child{white-space:nowrap;font-size:13px;letter-spacing:.05em}
+}
